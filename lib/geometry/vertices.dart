@@ -7,23 +7,17 @@ import 'vector.dart';
 class Vertices {
   final List<Vector> points;
   final dynamic body;
-  List<Vertex> vertices;
+  List<Vertex>? vertices;
 
   Vertices(this.points, this.body);
 
   void create() {
-    vertices = [];
+    vertices = <Vertex>[];
     for (var i = 0; i < points.length; i++) {
-      var point = points[i],
-          vertex = Vertex(
-            x: point.x,
-            y: point.y,
-            i: i,
-            body: body,
-            isInternal: false,
-          );
+      var point = points[i];
+      var vertex = Vertex(x: point.x, y: point.y, i: i, body: body, isInternal: false);
 
-      vertices.add(vertex);
+      vertices!.add(vertex);
     }
   }
 
@@ -37,8 +31,7 @@ class Vertices {
     for (var i = 0; i < vertices.length; i++) {
       j = (i + 1) % vertices.length;
       cross = Vector.cross(vertices[i].toVector(), vertices[j].toVector());
-      temp = Vector.mult(
-          Vector.add(vertices[i].toVector(), vertices[j].toVector()), cross);
+      temp = Vector.mult(Vector.add(vertices[i].toVector(), vertices[j].toVector()), cross);
       centre = Vector.add(centre, temp);
     }
 
@@ -46,8 +39,8 @@ class Vertices {
   }
 
   Vector mean(List<Vertex> vertices) {
-    double x;
-    double y;
+    double x = 0;
+    double y = 0;
 
     for (var i = 0; i < vertices.length; i++) {
       x += vertices[i].x;
@@ -80,18 +73,14 @@ class Vertices {
       Vector vectorJ = Vector(vertices[j].x, vertices[j].y);
       Vector vectorN = Vector(vertices[n].x, vertices[n].y);
       cross = (Vector.cross(vectorJ, vectorN)).abs();
-      numerator += cross *
-          (Vector.dot(vectorJ, vectorJ) +
-              Vector.dot(vectorJ, vectorN) +
-              Vector.dot(vectorN, vectorN));
+      numerator += cross * (Vector.dot(vectorJ, vectorJ) + Vector.dot(vectorJ, vectorN) + Vector.dot(vectorN, vectorN));
       denominator += cross;
     }
 
     return (mass / 6) * (numerator / denominator);
   }
 
-  static List<Vertex> translate(
-      List<Vertex> vertices, Vector vector, double scalar) {
+  static List<Vertex> translate(List<Vertex> vertices, Vector vector, double? scalar) {
     int i;
     if (scalar != null) {
       for (i = 0; i < vertices.length; i++) {
@@ -108,8 +97,7 @@ class Vertices {
     return vertices;
   }
 
-  static List<Vertex> rotate(
-      List<Vertex> vertices, double angle, Vector point) {
+  static List<Vertex> rotate(List<Vertex> vertices, double angle, Vector point) {
     if (angle == 0) return vertices;
     double cos = math.cos(angle), sin = math.sin(angle);
 
@@ -127,10 +115,8 @@ class Vertices {
 
   static bool contains(List<Vertex> vertices, Vector point) {
     for (var i = 0; i < vertices.length; i++) {
-      Vertex vertice = vertices[i],
-          nextVertice = vertices[(i + 1) % vertices.length];
-      if ((point.x - vertice.x) * (nextVertice.y - vertice.y) +
-              (point.y - vertice.y) * (vertice.x - nextVertice.x) >
+      Vertex vertice = vertices[i], nextVertice = vertices[(i + 1) % vertices.length];
+      if ((point.x - vertice.x) * (nextVertice.y - vertice.y) + (point.y - vertice.y) * (vertice.x - nextVertice.x) >
           0) {
         return false;
       }
@@ -139,8 +125,7 @@ class Vertices {
     return true;
   }
 
-  static List<Vertex> scale(
-      List<Vertex> vertices, double scaleX, double scaleY, Vector point) {
+  static List<Vertex> scale(List<Vertex> vertices, double scaleX, double scaleY, Vector? point) {
     if (scaleX == 1 && scaleY == 1) return vertices;
     if (point == null) {
       point = Vertices.centre(vertices);
@@ -178,18 +163,15 @@ class Vertices {
         continue;
       }
 
-      var prevNormal =
-          Vector(vertex.y - prevVertex.y, prevVertex.x - vertex.x).normalise();
-//  x: nextVertex.y - vertex.y,
-//         y: vertex.x - nextVertex.x,
+      var prevNormal = Vector(vertex.y - prevVertex.y, prevVertex.x - vertex.x).normalise();
+      // x: nextVertex.y - vertex.y,
+      // y: vertex.x - nextVertex.x,
       var nextNormal = Vector(nextVertex.y - vertex.y, vertex.x - nextVertex.x);
 
       var diagonalRadius = math.sqrt(2 * math.pow(currentRadius, 2)),
           radiusVector = Vector.mult(prevNormal, currentRadius),
-          midNormal =
-              Vector.mult(Vector.add(prevNormal, nextNormal), 0.5).normalise(),
-          scaledVertex = Vector.sub(
-              vertex.toVector(), Vector.mult(midNormal, diagonalRadius));
+          midNormal = Vector.mult(Vector.add(prevNormal, nextNormal), 0.5).normalise(),
+          scaledVertex = Vector.sub(vertex.toVector(), Vector.mult(midNormal, diagonalRadius));
 
       var precision = quality;
 
@@ -203,15 +185,12 @@ class Vertices {
       // use an even value for precision, more likely to reduce axes by using symmetry
       if (precision % 2 == 1) precision += 1;
 
-      var alpha = math.acos(Vector.dot(prevNormal, nextNormal)),
-          theta = alpha / precision;
+      var alpha = math.acos(Vector.dot(prevNormal, nextNormal)), theta = alpha / precision;
 
       for (var j = 0; j < precision; j++) {
-        Vector newVector =
-            Vector.add(radiusVector.rotateVactor(theta * j), scaledVertex);
+        Vector newVector = Vector.add(radiusVector.rotateVactor(theta * j), scaledVertex);
 
-        Vertex newVerticesFromVector =
-            Vertex(x: newVector.x, y: newVector.y, body: body, i: j);
+        Vertex newVerticesFromVector = Vertex(x: newVector.x, y: newVector.y, body: body, i: j);
 
         newVertices.add(newVerticesFromVector);
       }
@@ -224,15 +203,13 @@ class Vertices {
     var centre = mean(vertices);
 
     vertices.sort((vertexA, vertexB) {
-      return (Vector.angle(centre, vertexA.toVector()) -
-              Vector.angle(centre, vertexB.toVector()))
-          .toInt();
+      return (Vector.angle(centre, vertexA.toVector()) - Vector.angle(centre, vertexB.toVector())).toInt();
     });
 
     return vertices;
   }
 
-  bool isConvex(List<Vertex> vertices) {
+  bool? isConvex(List<Vertex> vertices) {
     // http://paulbourke.net/geometry/polygonmesh/
     // Copyright (c) Paul Bourke (use permitted)
 
@@ -267,7 +244,8 @@ class Vertices {
   List<Vertex> hull(List<Vertex> vertices) {
     // http://geomalgorithms.com/a10-_hull-1.html
 
-    var upper = [], lower = [], vertex, i;
+    var upper = <Vertex>[], lower = <Vertex>[];
+    Vertex? vertex;
 
     // sort vertices on x-axis (y-axis for ties)
     vertices = vertices.sublist(0);
@@ -277,12 +255,11 @@ class Vertices {
     });
 
     // build lower hull
-    for (i = 0; i < vertices.length; i += 1) {
+    for (var i = 0; i < vertices.length; i += 1) {
       vertex = vertices[i];
 
       while (lower.length >= 2 &&
-          Vector.cross3(
-                  lower[lower.length - 2], lower[lower.length - 1], vertex) <=
+          Vector.cross3(lower[lower.length - 2].toVector(), lower[lower.length - 1].toVector(), vertex.toVector()) <=
               0) {
         lower.removeLast();
       }
@@ -291,12 +268,11 @@ class Vertices {
     }
 
     // build upper hull
-    for (i = vertices.length - 1; i >= 0; i -= 1) {
+    for (var i = vertices.length - 1; i >= 0; i -= 1) {
       vertex = vertices[i];
 
       while (upper.length >= 2 &&
-          Vector.cross3(
-                  upper[upper.length - 2], upper[upper.length - 1], vertex) <=
+          Vector.cross3(upper[upper.length - 2].toVector(), upper[upper.length - 1].toVector(), vertex.toVector()) <=
               0) {
         upper.removeLast();
       }
@@ -320,7 +296,14 @@ class Vertex {
   final dynamic body;
   final bool isInternal;
 
-  Vertex({this.x, this.y, this.i, this.body, this.isInternal = false});
+  Vertex({
+    required this.x,
+    required this.y,
+    required this.i,
+    this.body,
+    this.isInternal = false,
+  });
+
   Vector toVector() {
     return Vector(x, y);
   }

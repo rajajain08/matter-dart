@@ -1,11 +1,11 @@
 name: matter_dart
-description: A new Flutter package project.
+description: Dart port of Matter JS.
 version: 0.0.1
-author:
+author: Raja Jain and Manuinder Sekhon
 homepage:
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
   flutter: ">=1.17.0"
 
 dependencies:
