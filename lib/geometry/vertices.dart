@@ -27,6 +27,36 @@ class Vertices {
     }
   }
 
+  static Vector centre(List<Vertex> vertices) {
+    var area = Vertices.area(vertices, true);
+    Vector centre = Vector(0, 0);
+    double cross;
+    Vector temp;
+    int j;
+
+    for (var i = 0; i < vertices.length; i++) {
+      j = (i + 1) % vertices.length;
+      cross = Vector.cross(vertices[i].toVector(), vertices[j].toVector());
+      temp = Vector.mult(
+          Vector.add(vertices[i].toVector(), vertices[j].toVector()), cross);
+      centre = Vector.add(centre, temp);
+    }
+
+    return Vector.div(centre, 6 * area);
+  }
+
+  Vector mean(List<Vertex> vertices) {
+    double x;
+    double y;
+
+    for (var i = 0; i < vertices.length; i++) {
+      x += vertices[i].x;
+      y += vertices[i].y;
+    }
+
+    return Vector.div(Vector(x, y), vertices.length.toDouble());
+  }
+
   static double area(List<Vertex> vertices, bool signed) {
     double area = 0;
     int j = vertices.length - 1;
@@ -112,8 +142,9 @@ class Vertices {
   static List<Vertex> scale(
       List<Vertex> vertices, double scaleX, double scaleY, Vector point) {
     if (scaleX == 1 && scaleY == 1) return vertices;
-    // TODO
-    // point = point || Vertices.centre(vertices);
+    if (point == null) {
+      point = Vertices.centre(vertices);
+    }
 
     var vertex, delta;
 
@@ -187,6 +218,98 @@ class Vertices {
     }
 
     return newVertices;
+  }
+
+  List<Vertex> clockwiseSort(List<Vertex> vertices) {
+    var centre = mean(vertices);
+
+    vertices.sort((vertexA, vertexB) {
+      return (Vector.angle(centre, vertexA.toVector()) -
+              Vector.angle(centre, vertexB.toVector()))
+          .toInt();
+    });
+
+    return vertices;
+  }
+
+  bool isConvex(List<Vertex> vertices) {
+    // http://paulbourke.net/geometry/polygonmesh/
+    // Copyright (c) Paul Bourke (use permitted)
+
+    var flag = 0, n = vertices.length, i, j, k, z;
+
+    if (n < 3) return null;
+
+    for (i = 0; i < n; i++) {
+      j = (i + 1) % n;
+      k = (i + 2) % n;
+      z = (vertices[j].x - vertices[i].x) * (vertices[k].y - vertices[j].y);
+      z -= (vertices[j].y - vertices[i].y) * (vertices[k].x - vertices[j].x);
+
+      if (z < 0) {
+        flag |= 1;
+      } else if (z > 0) {
+        flag |= 2;
+      }
+
+      if (flag == 3) {
+        return false;
+      }
+    }
+
+    if (flag != 0) {
+      return true;
+    } else {
+      return null;
+    }
+  }
+
+  List<Vertex> hull(List<Vertex> vertices) {
+    // http://geomalgorithms.com/a10-_hull-1.html
+
+    var upper = [], lower = [], vertex, i;
+
+    // sort vertices on x-axis (y-axis for ties)
+    vertices = vertices.sublist(0);
+    vertices.sort((vertexA, vertexB) {
+      var dx = vertexA.x - vertexB.x;
+      return (dx != 0 ? dx : vertexA.y - vertexB.y).toInt();
+    });
+
+    // build lower hull
+    for (i = 0; i < vertices.length; i += 1) {
+      vertex = vertices[i];
+
+      while (lower.length >= 2 &&
+          Vector.cross3(
+                  lower[lower.length - 2], lower[lower.length - 1], vertex) <=
+              0) {
+        lower.removeLast();
+      }
+
+      lower.add(vertex);
+    }
+
+    // build upper hull
+    for (i = vertices.length - 1; i >= 0; i -= 1) {
+      vertex = vertices[i];
+
+      while (upper.length >= 2 &&
+          Vector.cross3(
+                  upper[upper.length - 2], upper[upper.length - 1], vertex) <=
+              0) {
+        upper.removeLast();
+      }
+
+      upper.add(vertex);
+    }
+
+    // concatenation of the lower and upper hulls gives the convex hull
+    // omit last points because they are repeated at the beginning of the other list
+    upper.removeLast();
+    lower.removeLast();
+    upper.addAll(lower);
+    return upper;
   }
 }
 
