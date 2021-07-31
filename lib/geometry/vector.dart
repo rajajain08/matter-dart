@@ -24,8 +24,8 @@ class Vector {
     double cos = math.cos(angle);
     double sin = math.sin(angle);
 
-    return Vector(point.x + ((x - point.x) * cos - (y - point.y) * sin),
-        point.y + ((x - point.x) * sin + (y - point.y) * cos));
+    return Vector(
+        point.x + ((x - point.x) * cos - (y - point.y) * sin), point.y + ((x - point.x) * sin + (y - point.y) * cos));
   }
 
   Vector normalise() {
