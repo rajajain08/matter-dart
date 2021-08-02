@@ -1,8 +1,11 @@
 import 'dart:math' as math;
 
+/// Vectors are the basis of all the geometry related operations in the engine.
+///
+/// It is the object of the form `[x, y]`.
 class Vector {
-  final double x;
-  final double y;
+  double x;
+  double y;
 
   Vector(this.x, this.y);
 

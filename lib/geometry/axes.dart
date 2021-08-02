@@ -1,17 +1,12 @@
 import 'dart:math' as math;
 
 import 'vector.dart';
-import 'vertices.dart';
+// import 'vertices.dart';
 
-/// [Axes] contains methods to represent and manipulate the sets of axes.
-class Axes {
-  Axes({this.x = 0, this.y = 0});
-
-  double x;
-  double y;
-
+/// [Axes] contains methods to create and manipulate the sets of axes.
+abstract class Axes {
   /// Creates a new set of axes from the given vertices.
-  static List<Axes> fromVertices(List<Vertex> vertices) {
+  static List<Vector> fromVertices(List<Vector> vertices) {
     Map<String, Vector> gradientMap = {};
 
     // Find the unique axes, using edge normal gradients
@@ -24,13 +19,13 @@ class Axes {
       gradientMap[gradient.toStringAsFixed(3)] = normalised;
     }
 
-    return gradientMap.values.map<Axes>((vector) => Axes(x: vector.x, y: vector.y)).toList();
+    return gradientMap.values.toList();
   }
 
   /// Rotates the given list of axes by the given angle.
   ///
   /// Note: Mutates the argument list directly.
-  static void rotate(List<Axes> axes, double angle) {
+  static void rotate(List<Vector> axes, double angle) {
     if (angle == 0) return;
 
     final cos = math.cos(angle);

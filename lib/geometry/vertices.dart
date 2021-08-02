@@ -1,12 +1,13 @@
 import 'dart:math' as math;
 
+import 'package:matter_dart/body/body.dart';
 import 'package:matter_dart/core/common.dart';
 
 import 'vector.dart';
 
 class Vertices {
   final List<Vector> points;
-  final dynamic body;
+  final Body body;
   List<Vertex>? vertices;
 
   Vertices(this.points, this.body);
@@ -30,8 +31,8 @@ class Vertices {
 
     for (var i = 0; i < vertices.length; i++) {
       j = (i + 1) % vertices.length;
-      cross = Vector.cross(vertices[i].toVector(), vertices[j].toVector());
-      temp = Vector.mult(Vector.add(vertices[i].toVector(), vertices[j].toVector()), cross);
+      cross = Vector.cross(vertices[i], vertices[j]);
+      temp = Vector.mult(Vector.add(vertices[i], vertices[j]), cross);
       centre = Vector.add(centre, temp);
     }
 
@@ -171,7 +172,7 @@ class Vertices {
       var diagonalRadius = math.sqrt(2 * math.pow(currentRadius, 2)),
           radiusVector = Vector.mult(prevNormal, currentRadius),
           midNormal = Vector.mult(Vector.add(prevNormal, nextNormal), 0.5).normalise(),
-          scaledVertex = Vector.sub(vertex.toVector(), Vector.mult(midNormal, diagonalRadius));
+          scaledVertex = Vector.sub(vertex, Vector.mult(midNormal, diagonalRadius));
 
       var precision = quality;
 
@@ -203,7 +204,7 @@ class Vertices {
     var centre = mean(vertices);
 
     vertices.sort((vertexA, vertexB) {
-      return (Vector.angle(centre, vertexA.toVector()) - Vector.angle(centre, vertexB.toVector())).toInt();
+      return (Vector.angle(centre, vertexA) - Vector.angle(centre, vertexB)).toInt();
     });
 
     return vertices;
@@ -258,9 +259,7 @@ class Vertices {
     for (var i = 0; i < vertices.length; i += 1) {
       vertex = vertices[i];
 
-      while (lower.length >= 2 &&
-          Vector.cross3(lower[lower.length - 2].toVector(), lower[lower.length - 1].toVector(), vertex.toVector()) <=
-              0) {
+      while (lower.length >= 2 && Vector.cross3(lower[lower.length - 2], lower[lower.length - 1], vertex) <= 0) {
         lower.removeLast();
       }
 
@@ -271,9 +270,7 @@ class Vertices {
     for (var i = vertices.length - 1; i >= 0; i -= 1) {
       vertex = vertices[i];
 
-      while (upper.length >= 2 &&
-          Vector.cross3(upper[upper.length - 2].toVector(), upper[upper.length - 1].toVector(), vertex.toVector()) <=
-              0) {
+      while (upper.length >= 2 && Vector.cross3(upper[upper.length - 2], upper[upper.length - 1], vertex) <= 0) {
         upper.removeLast();
       }
 
@@ -289,22 +286,20 @@ class Vertices {
   }
 }
 
-class Vertex {
-  double x;
-  double y;
+class Vertex extends Vector {
   final int i;
-  final dynamic body;
+  final Body body;
   final bool isInternal;
 
   Vertex({
-    required this.x,
-    required this.y,
+    required double x,
+    required double y,
     required this.i,
-    this.body,
+    required this.body,
     this.isInternal = false,
-  });
+  }) : super(x, y);
 
-  Vector toVector() {
-    return Vector(x, y);
-  }
+  // Vector toVector() {
+  //   return Vector(x, y);
+  // }
 }
