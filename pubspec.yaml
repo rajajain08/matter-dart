@@ -2,7 +2,7 @@ name: matter_dart
 description: Dart port of Matter JS.
 version: 0.0.1
 author: Raja Jain and Manuinder Sekhon
-homepage:
+homepage: https://github.com/rajajain08/matter-dart
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
