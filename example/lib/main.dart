@@ -35,7 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _runner.run((dt, correction) {
       print('$counter -> dt: $dt \t correction: $correction');
       counter++;
-    });
+    }, engineTiming: EngineTimingOptions(timeScale: 0.1));
   }
 
   @override
