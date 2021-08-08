@@ -1,4 +1,4 @@
-import 'package:matter_dart/body/body.dart';
+import 'package:matter_dart/src/body/body.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
 
 class Collision {
