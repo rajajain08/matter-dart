@@ -1,5 +1,5 @@
 import 'package:matter_dart/body/body.dart';
-import 'package:matter_dart/geometry/vector.dart';
+import 'package:matter_dart/src/geometry/vector.dart';
 
 class Collision {
   final bool collided;

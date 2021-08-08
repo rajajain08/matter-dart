@@ -1,4 +1,4 @@
-import 'package:matter_dart/geometry/vertices.dart';
+import 'package:matter_dart/src/geometry/vertices.dart';
 
 class Contact {
   final Vertex vertex;

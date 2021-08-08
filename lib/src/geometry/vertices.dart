@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
-import 'package:matter_dart/body/body.dart';
-import 'package:matter_dart/core/common.dart';
+import 'package:matter_dart/src/body/body.dart';
+import 'package:matter_dart/src/utils/common.dart';
 
 import 'vector.dart';
 
