@@ -23,8 +23,8 @@ class Resolver {
       if (!pair.isActive) continue;
 
       final activeCount = pair.activeContacts.length;
-      pair.collision.parentA.totalContacts += activeCount;
-      pair.collision.parentB.totalContacts += activeCount;
+      pair.collision.parentA?.totalContacts += activeCount;
+      pair.collision.parentB?.totalContacts += activeCount;
     }
   }
 
@@ -42,11 +42,11 @@ class Resolver {
 
       // Get current separation between body edges involved in collision.
       Vector bodyBtoA = Vector.sub(
-        Vector.add(bodyB.positionImpulse, bodyB.position),
-        Vector.add(bodyA.positionImpulse, Vector.sub(bodyB.position, collision.penetration)),
+        Vector.add(bodyB!.positionImpulse, bodyB.position),
+        Vector.add(bodyA!.positionImpulse, Vector.sub(bodyB.position, collision.penetration!)),
       );
 
-      pair.separation = Vector.dot(normal, bodyBtoA);
+      pair.separation = Vector.dot(normal!, bodyBtoA);
     }
 
     for (int index = 0; index < pairs.length; index++) {
@@ -59,19 +59,19 @@ class Resolver {
       final normal = collision.normal;
       double positionImpulse = (pair.separation - pair.slop) * timescale;
 
-      if (bodyA.isStatic || bodyB.isStatic) {
+      if (bodyA!.isStatic || bodyB!.isStatic) {
         positionImpulse *= 2;
       }
 
       if (!(bodyA.isStatic || bodyA.isSleeping)) {
         final contactShare = Resolver._positionDampen / bodyA.totalContacts;
-        bodyA.positionImpulse.x += normal.x * positionImpulse * contactShare;
+        bodyA.positionImpulse.x += normal!.x * positionImpulse * contactShare;
         bodyA.positionImpulse.y += normal.y * positionImpulse * contactShare;
       }
 
-      if (!(bodyB.isStatic || bodyB.isSleeping)) {
+      if (!(bodyB!.isStatic || bodyB.isSleeping)) {
         final contactShare = Resolver._positionDampen / bodyB.totalContacts;
-        bodyB.positionImpulse.x -= normal.x * positionImpulse * contactShare;
+        bodyB.positionImpulse.x -= normal!.x * positionImpulse * contactShare;
         bodyB.positionImpulse.y -= normal.y * positionImpulse * contactShare;
       }
     }
@@ -137,18 +137,18 @@ class Resolver {
 
         if (normalImpulse != 0 || tangentImpluse != 0) {
           // Total impulse from contact.
-          impulse.x = (normal.x * normalImpulse) + (tangent.x * tangentImpluse);
+          impulse.x = (normal!.x * normalImpulse) + (tangent!.x * tangentImpluse);
           impulse.y = (normal.y * normalImpulse) + (tangent.y * tangentImpluse);
 
           // Apply impulse from contact.
-          if (!(bodyA.isStatic || bodyA.isSleeping)) {
+          if (!(bodyA!.isStatic || bodyA.isSleeping)) {
             final Vector offset = Vector.sub(contactVertex, bodyA.position);
             bodyA.positionPrev?.x += impulse.x * bodyA.inverseMass;
             bodyA.positionPrev?.y += impulse.y * bodyA.inverseMass;
             bodyA.anglePrev += Vector.cross(offset, impulse) * bodyA.inverseInertia;
           }
 
-          if (!(bodyB.isStatic || bodyB.isSleeping)) {
+          if (!(bodyB!.isStatic || bodyB.isSleeping)) {
             final Vector offset = Vector.sub(contactVertex, bodyB.position);
             bodyB.positionPrev?.x -= impulse.x * bodyB.inverseMass;
             bodyB.positionPrev?.y -= impulse.y * bodyB.inverseMass;
@@ -178,9 +178,9 @@ class Resolver {
       final contactShare = 1 / contacts.length;
 
       // Update body velocities.
-      bodyA.velocity.x = bodyA.position.x - (bodyA.positionPrev?.x ?? 0);
+      bodyA!.velocity.x = bodyA.position.x - (bodyA.positionPrev?.x ?? 0);
       bodyA.velocity.y = bodyA.position.y - (bodyA.positionPrev?.y ?? 0);
-      bodyB.velocity.x = bodyB.position.x - (bodyB.positionPrev?.x ?? 0);
+      bodyB!.velocity.x = bodyB.position.x - (bodyB.positionPrev?.x ?? 0);
       bodyB.velocity.y = bodyB.position.y - (bodyB.positionPrev?.y ?? 0);
       bodyA.angularVelocity = bodyA.angle - bodyA.anglePrev;
       bodyB.angularVelocity = bodyB.angle - bodyB.anglePrev;
@@ -194,9 +194,9 @@ class Resolver {
         final velocityPointA = Vector.add(bodyA.velocity, Vector.mult(Vector.perp(offsetA), bodyA.angularVelocity));
         final velocityPointB = Vector.add(bodyB.velocity, Vector.mult(Vector.perp(offsetB), bodyB.angularVelocity));
         final relativeVelocity = Vector.sub(velocityPointA, velocityPointB);
-        final double normalVelocity = Vector.dot(normal, relativeVelocity);
+        final double normalVelocity = Vector.dot(normal!, relativeVelocity);
 
-        final double tangentVelocity = Vector.dot(tangent, relativeVelocity);
+        final double tangentVelocity = Vector.dot(tangent!, relativeVelocity);
         final double tangentSpeed = tangentVelocity.abs();
         final int tangentVelocityDirection = Common.sign(tangentVelocity);
 

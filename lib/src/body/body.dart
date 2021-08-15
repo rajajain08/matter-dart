@@ -20,6 +20,10 @@ class Body {
   double inertia = 0;
   double inverseInertia = 0;
   double angularVelocity = 0;
+  Body? parent;
+  double speed = 0;
+  double angularSpeed = 0;
+  List<Vector> axes = <Vector>[];
 
   // Indicates whether a body is considered static. A static body can never change position or angle and is completely fixed.
   bool isStatic = false;

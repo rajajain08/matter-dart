@@ -2,20 +2,33 @@ import 'package:matter_dart/src/body/body.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
 
 class Collision {
-  final bool collided;
-  final int axisNumber;
-  final Body axisBody;
-  final Body bodyA;
-  final Body bodyB;
-  final Body parentA;
-  final Body parentB;
-  final int depth;
-  final Vector normal;
-  final Vector tangent;
-  final Vector penetration;
-  final List<Vector> supports;
-  final bool reused;
+  bool collided;
+  int? axisNumber;
+  Body? axisBody;
+  Body bodyA;
+  Body bodyB;
+  Body? parentA;
+  Body? parentB;
+  double? depth;
+  Vector? normal;
+  Vector? tangent;
+  Vector? penetration;
+  List<Vector> supports;
+  bool reused;
 
-  Collision(this.collided, this.axisNumber, this.axisBody, this.bodyA, this.bodyB, this.parentA, this.parentB,
-      this.depth, this.normal, this.tangent, this.penetration, this.supports, this.reused);
+  Collision({
+    this.collided = false,
+    this.axisNumber,
+    this.axisBody,
+    required this.bodyA,
+    required this.bodyB,
+    this.parentA,
+    this.parentB,
+    this.depth,
+    this.normal,
+    this.tangent,
+    this.penetration,
+    this.supports = const <Vector>[],
+    this.reused = false,
+  });
 }

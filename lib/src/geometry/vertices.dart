@@ -16,7 +16,7 @@ class Vertices {
     vertices = <Vertex>[];
     for (var i = 0; i < points.length; i++) {
       var point = points[i];
-      var vertex = Vertex(x: point.x, y: point.y, i: i, body: body, isInternal: false);
+      var vertex = Vertex(x: point.x, y: point.y, index: i, body: body, isInternal: false);
 
       vertices!.add(vertex);
     }
@@ -191,7 +191,7 @@ class Vertices {
       for (var j = 0; j < precision; j++) {
         Vector newVector = Vector.add(radiusVector.rotateVactor(theta * j), scaledVertex);
 
-        Vertex newVerticesFromVector = Vertex(x: newVector.x, y: newVector.y, body: body, i: j);
+        Vertex newVerticesFromVector = Vertex(x: newVector.x, y: newVector.y, body: body, index: j);
 
         newVertices.add(newVerticesFromVector);
       }
@@ -287,14 +287,14 @@ class Vertices {
 }
 
 class Vertex extends Vector {
-  final int i;
+  final int index;
   final Body body;
   final bool isInternal;
 
   Vertex({
     required double x,
     required double y,
-    required this.i,
+    required this.index,
     required this.body,
     this.isInternal = false,
   }) : super(x, y);
