@@ -81,7 +81,7 @@ class Vertices {
     return (mass / 6) * (numerator / denominator);
   }
 
-  static List<Vertex> translate(List<Vertex> vertices, Vector vector, double? scalar) {
+  static List<Vertex> translate(List<Vertex> vertices, Vector vector, [double? scalar]) {
     int i;
     if (scalar != null) {
       for (i = 0; i < vertices.length; i++) {

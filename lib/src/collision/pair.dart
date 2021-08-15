@@ -21,7 +21,7 @@ class Pair {
   final double frictionStatic;
   double restitution;
   double slop;
-  int? separation;
+  double separation;
 
   Map<String, Contact> contacts = {};
   List<Contact> activeContacts = [];
@@ -34,6 +34,7 @@ class Pair {
         bodyB = collision.bodyB,
         parentA = collision.parentA,
         parentB = collision.parentB,
+        separation = 0.0,
         isSensor = collision.bodyA.isSensor || collision.bodyB.isSensor,
         timeCreated = timeStamp,
         timeUpdated = timeStamp,
@@ -73,7 +74,7 @@ class Pair {
         }
       }
 
-      separation = collision.depth;
+      separation = collision.depth.toDouble();
       setActive(true, timestamp);
     } else {
       if (isActive == true) setActive(false, timestamp);

@@ -65,7 +65,7 @@ class Vector {
     return Vector(a.x / scaler, a.y / scaler);
   }
 
-  static Vector prep(Vector a, bool negate) {
+  static Vector perp(Vector a, [bool negate = false]) {
     double neg = negate == true ? -1 : 1;
     return Vector(neg * -a.y, neg * a.x);
   }
