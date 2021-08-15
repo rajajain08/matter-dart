@@ -32,3 +32,15 @@ class Collision {
     this.reused = false,
   });
 }
+
+class CollisionFilter {
+  int group;
+  int mask;
+  int category;
+
+  CollisionFilter({
+    required this.group,
+    required this.mask,
+    required this.category,
+  });
+}

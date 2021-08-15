@@ -1,3 +1,4 @@
+import 'package:matter_dart/matter_dart.dart';
 import 'package:matter_dart/src/geometry/bounds.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
 import 'package:matter_dart/src/geometry/vertices.dart';
@@ -39,4 +40,6 @@ class Body {
 
   // The current velocity of the body after the last `Body.update`.
   Vector velocity = Vector(0, 0);
+
+  CollisionFilter collisionFilter = CollisionFilter(category: 0x0001, mask: 0xFFFFFFFF, group: 0);
 }

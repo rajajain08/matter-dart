@@ -9,8 +9,24 @@ class Pairs {
   List<Pair> collisionActive;
   List<Pair> collisionEnd;
 
-  Pairs(this.table, this.list, this.collisionStart, this.collisionActive, this.collisionEnd,
-      {this.pairMaxIdleLife = 1000});
+  Pairs({
+    required this.table,
+    required this.list,
+    required this.collisionStart,
+    required this.collisionActive,
+    required this.collisionEnd,
+    this.pairMaxIdleLife = 1000,
+  });
+
+  factory Pairs.create() {
+    return Pairs(
+      table: <String, Pair>{},
+      list: <Pair>[],
+      collisionStart: <Pair>[],
+      collisionActive: <Pair>[],
+      collisionEnd: <Pair>[],
+    );
+  }
 
   void update(List<Collision> collisions, DateTime timeStamp) {
     Collision collision;

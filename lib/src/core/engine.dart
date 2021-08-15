@@ -1,3 +1,4 @@
+import 'package:matter_dart/src/collision/pairs.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
 
 class Engine {
@@ -25,6 +26,8 @@ class Engine {
   // TODO:
   dynamic grid;
 
+  late Pairs pairs;
+
   Engine({
     this.positionIterations = 6,
     this.velocityIterations = 4,
@@ -35,6 +38,7 @@ class Engine {
   }) {
     this.gravity = gravity ?? EngineGravityOptions(x: 0, y: 1, scale: 0.001);
     this.timing = timing ?? EngineTimingOptions(timeScale: 1);
+    this.pairs = Pairs.create();
   }
 }
 
