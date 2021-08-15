@@ -6,4 +6,5 @@ class Body {
   double frictionStatic = 1;
   double restitution = 1;
   double slop = 0.05;
+  bool isSleeping = false;
 }
