@@ -3,9 +3,11 @@ import 'dart:math' as math;
 import 'package:matter_dart/src/body/body.dart';
 import 'package:matter_dart/src/collision/collision.dart';
 import 'package:matter_dart/src/collision/contact.dart';
+import 'package:matter_dart/src/geometry/vector.dart';
+import 'package:matter_dart/src/geometry/vertices.dart';
 
 class Pair {
-  final Collision collision;
+  Collision collision;
   final Body bodyA;
   final Body bodyB;
   final Body parentA;
@@ -14,13 +16,14 @@ class Pair {
   final DateTime timeStamp;
   final DateTime timeCreated;
   DateTime timeUpdated;
-  final double inverseMass;
-  final double friction;
+  double inverseMass;
+  double friction;
   final double frictionStatic;
-  final double restitution;
-  final double slop;
+  double restitution;
+  double slop;
+  int? separation;
 
-  Map<int, Contact> contacts = {};
+  Map<String, Contact> contacts = {};
   List<Contact> activeContacts = [];
   double sepration = 0;
   bool isActive = true;
@@ -47,6 +50,33 @@ class Pair {
     } else {
       isActive = false;
       activeContacts.length = 0;
+    }
+  }
+
+  void update(Collision updatedCollision, DateTime timestamp) {
+    collision = updatedCollision;
+    inverseMass = parentA.inverseMass + parentB.inverseMass;
+    friction = math.max(parentA.frictionStatic, parentB.frictionStatic);
+    restitution = math.max(parentA.restitution, parentB.restitution);
+    slop = math.max(parentA.slop, parentB.slop);
+    activeContacts.length = 0;
+    List<Vector> supports = updatedCollision.supports;
+
+    if (collision.collided) {
+      for (var i = 0; i < supports.length; i++) {
+        var support = supports[i], contactId = Contact(support as Vertex).id, contact = contacts[contactId];
+
+        if (contact != null) {
+          activeContacts.add(contact);
+        } else {
+          activeContacts.add((contacts[contactId] = Contact(support)));
+        }
+      }
+
+      separation = collision.depth;
+      setActive(true, timestamp);
+    } else {
+      if (isActive == true) setActive(false, timestamp);
     }
   }
 
