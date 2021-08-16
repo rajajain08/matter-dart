@@ -84,4 +84,10 @@ class Pair {
   String get id => (bodyA.id < bodyB.id)
       ? "A" + bodyA.id.toString() + "B" + bodyB.id.toString()
       : "A" + bodyB.id.toString() + "B" + bodyA.id.toString();
+
+  static String getPairId(Body bodyA, Body bodyB) {
+    return (bodyA.id < bodyB.id)
+        ? "A" + bodyA.id.toString() + "B" + bodyB.id.toString()
+        : "A" + bodyB.id.toString() + "B" + bodyA.id.toString();
+  }
 }

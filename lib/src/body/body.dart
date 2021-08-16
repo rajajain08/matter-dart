@@ -3,6 +3,8 @@ import 'package:matter_dart/src/geometry/bounds.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
 import 'package:matter_dart/src/geometry/vertices.dart';
 
+import 'region.dart';
+
 class Body {
   int id = 0;
   bool isSensor = false;
@@ -42,4 +44,5 @@ class Body {
   Vector velocity = Vector(0, 0);
 
   CollisionFilter collisionFilter = CollisionFilter(category: 0x0001, mask: 0xFFFFFFFF, group: 0);
+  Region? region;
 }

@@ -17,7 +17,7 @@ class Resolver {
   static const int _frictionNormalMultiplier = 5;
 
   /// Prepare pairs for position solving.
-  void preSolvePosition(List<Pair> pairs) {
+  static void preSolvePosition(List<Pair> pairs) {
     for (int index = 0; index < pairs.length; index++) {
       Pair pair = pairs[index];
       if (!pair.isActive) continue;
@@ -29,7 +29,7 @@ class Resolver {
   }
 
   /// Find a solution for pair positions.
-  void solvePosition(List<Pair> pairs, double timescale) {
+  static void solvePosition(List<Pair> pairs, double timescale) {
     // Find impulses required to resolve penetration
     for (int index = 0; index < pairs.length; index++) {
       Pair pair = pairs[index];
@@ -78,7 +78,7 @@ class Resolver {
   }
 
   /// Apply position resolution.
-  void postSolvePosition(List<Body> bodies) {
+  static void postSolvePosition(List<Body> bodies) {
     for (int index = 0; index < bodies.length; index++) {
       Body body = bodies[index];
 
@@ -114,7 +114,7 @@ class Resolver {
   }
 
   /// Prepare pairs for velocity solving.
-  void preSolveVelocity(List<Pair> pairs) {
+  static void preSolveVelocity(List<Pair> pairs) {
     Vector impulse = Vector(0, 0);
 
     for (int index = 0; index < pairs.length; index++) {
@@ -160,7 +160,7 @@ class Resolver {
   }
 
   /// Find a solution for pair velocities.
-  void solveVelocity(List<Pair> pairs, double timescale) {
+  static void solveVelocity(List<Pair> pairs, double timescale) {
     final double timescaleSquared = math.pow(timescale, 2).toDouble();
     final Vector impulse = Vector(0, 0);
 

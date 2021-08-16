@@ -1,3 +1,4 @@
+import 'package:matter_dart/src/body/composite.dart';
 import 'package:matter_dart/src/collision/pairs.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
 
@@ -20,8 +21,7 @@ class Engine {
   // Specifies timescale property to apply slow-motion or fast-motion effect on engine.
   late EngineTimingOptions timing;
 
-  // TODO:
-  dynamic world;
+  Composite? world;
 
   // TODO:
   dynamic grid;
@@ -35,6 +35,7 @@ class Engine {
     this.enableSleeping = false,
     EngineGravityOptions? gravity,
     EngineTimingOptions? timing,
+    this.world,
   }) {
     this.gravity = gravity ?? EngineGravityOptions(x: 0, y: 1, scale: 0.001);
     this.timing = timing ?? EngineTimingOptions(timeScale: 1);
