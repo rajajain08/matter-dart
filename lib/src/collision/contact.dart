@@ -5,5 +5,5 @@ class Contact {
   double normalImpulse = 0;
   double tangentImpulse = 0;
   Contact(this.vertex);
-  String get id => vertex.body.id.toString() + '_' + vertex.i.toString();
+  String get id => vertex.body.id.toString() + '_' + vertex.index.toString();
 }

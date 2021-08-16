@@ -21,7 +21,7 @@ class Pair {
   final double frictionStatic;
   double restitution;
   double slop;
-  int? separation;
+  double separation;
 
   Map<String, Contact> contacts = {};
   List<Contact> activeContacts = [];
@@ -32,16 +32,17 @@ class Pair {
   Pair(this.collision, this.timeStamp)
       : bodyA = collision.bodyA,
         bodyB = collision.bodyB,
-        parentA = collision.parentA,
-        parentB = collision.parentB,
+        parentA = collision.parentA!,
+        parentB = collision.parentB!,
+        separation = 0.0,
         isSensor = collision.bodyA.isSensor || collision.bodyB.isSensor,
         timeCreated = timeStamp,
         timeUpdated = timeStamp,
-        inverseMass = collision.parentA.inverseMass + collision.parentB.inverseMass,
-        friction = math.min(collision.parentA.friction, collision.parentB.friction),
-        frictionStatic = math.max(collision.parentA.frictionStatic, collision.parentB.frictionStatic),
-        restitution = math.max(collision.parentA.restitution, collision.parentB.restitution),
-        slop = math.max(collision.parentA.slop, collision.parentB.slop);
+        inverseMass = collision.parentA!.inverseMass + collision.parentB!.inverseMass,
+        friction = math.min(collision.parentA!.friction, collision.parentB!.friction),
+        frictionStatic = math.max(collision.parentA!.frictionStatic, collision.parentB!.frictionStatic),
+        restitution = math.max(collision.parentA!.restitution, collision.parentB!.restitution),
+        slop = math.max(collision.parentA!.slop, collision.parentB!.slop);
 
   void setActive(bool isActive, DateTime timeStamp) {
     if (isActive) {
@@ -73,7 +74,7 @@ class Pair {
         }
       }
 
-      separation = collision.depth;
+      separation = collision.depth!.toDouble();
       setActive(true, timestamp);
     } else {
       if (isActive == true) setActive(false, timestamp);
@@ -83,4 +84,10 @@ class Pair {
   String get id => (bodyA.id < bodyB.id)
       ? "A" + bodyA.id.toString() + "B" + bodyB.id.toString()
       : "A" + bodyB.id.toString() + "B" + bodyA.id.toString();
+
+  static String getPairId(Body bodyA, Body bodyB) {
+    return (bodyA.id < bodyB.id)
+        ? "A" + bodyA.id.toString() + "B" + bodyB.id.toString()
+        : "A" + bodyB.id.toString() + "B" + bodyA.id.toString();
+  }
 }
