@@ -27,6 +27,12 @@ class Body {
   double speed = 0;
   double angularSpeed = 0;
   List<Vector> axes = <Vector>[];
+  Vector force = Vector(0, 0);
+  double motion = 0;
+
+  // Number of updates in which this body must have near-zero velocity before it is set as sleeping
+  int sleepCounter = 0;
+  int sleepThreshold = 60;
 
   // Indicates whether a body is considered static. A static body can never change position or angle and is completely fixed.
   bool isStatic = false;
