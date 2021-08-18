@@ -3,8 +3,6 @@ import 'package:matter_dart/src/geometry/bounds.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
 import 'package:matter_dart/src/geometry/vertices.dart';
 
-import 'region.dart';
-
 class Body {
   int id = 0;
   bool isSensor = false;
@@ -51,4 +49,29 @@ class Body {
 
   CollisionFilter collisionFilter = CollisionFilter(category: 0x0001, mask: 0xFFFFFFFF, group: 0);
   Region? region;
+  BodyConstraintImpulse constraintImpulse = BodyConstraintImpulse();
+}
+
+/// Creates a region for the body.
+class Region {
+  late final String id;
+  final int startCol;
+  final int endCol;
+  final int startRow;
+  final int endRow;
+
+  Region({
+    required this.startCol,
+    required this.endCol,
+    required this.startRow,
+    required this.endRow,
+  }) {
+    id = '$startCol,$endCol,$startRow,$endRow';
+  }
+}
+
+/// Defines constraint impulse for body.
+class BodyConstraintImpulse extends Vector {
+  double angle;
+  BodyConstraintImpulse({double x = 0, double y = 0, this.angle = 0}) : super(x, y);
 }
