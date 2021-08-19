@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:matter_dart/matter_dart.dart';
 import 'package:matter_dart/src/body/body.dart';
 import 'package:matter_dart/src/body/composite.dart';
-import 'package:matter_dart/src/body/region.dart';
 import 'package:matter_dart/src/core/engine.dart';
 
 /// Contains methods for creating and manipulating collision broadphase grid structures.
