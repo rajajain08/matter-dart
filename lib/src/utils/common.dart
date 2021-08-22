@@ -10,3 +10,12 @@ class Common {
     return value < 0 ? -1 : 1;
   }
 }
+
+class ID {
+  factory ID() => instance;
+  ID._internal();
+  static final ID instance = ID._internal();
+
+  int _id = 0;
+  int get nextID => _id++;
+}

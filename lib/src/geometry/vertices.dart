@@ -6,20 +6,15 @@ import 'package:matter_dart/src/utils/common.dart';
 import 'vector.dart';
 
 class Vertices {
-  final List<Vector> points;
-  final Body body;
-  List<Vertex>? vertices;
-
-  Vertices(this.points, this.body);
-
-  void create() {
-    vertices = <Vertex>[];
+  static List<Vertex> create(List<Vector> points, Body body) {
+    final vertices = <Vertex>[];
     for (var i = 0; i < points.length; i++) {
       var point = points[i];
       var vertex = Vertex(x: point.x, y: point.y, index: i, body: body, isInternal: false);
 
-      vertices!.add(vertex);
+      vertices.add(vertex);
     }
+    return vertices;
   }
 
   static Vector centre(List<Vertex> vertices) {
@@ -39,7 +34,7 @@ class Vertices {
     return Vector.div(centre, 6 * area);
   }
 
-  Vector mean(List<Vertex> vertices) {
+  static Vector mean(List<Vertex> vertices) {
     double x = 0;
     double y = 0;
 
@@ -51,7 +46,7 @@ class Vertices {
     return Vector.div(Vector(x, y), vertices.length.toDouble());
   }
 
-  static double area(List<Vertex> vertices, bool signed) {
+  static double area(List<Vertex> vertices, [bool signed = false]) {
     double area = 0;
     int j = vertices.length - 1;
 
@@ -144,7 +139,7 @@ class Vertices {
     return vertices;
   }
 
-  List<Vertex> chamfer(
+  static List<Vertex> chamfer(
     List<Vertex> vertices, {
     List<double> radius = const [8],
     double quality = -1,
@@ -191,7 +186,7 @@ class Vertices {
       for (var j = 0; j < precision; j++) {
         Vector newVector = Vector.add(radiusVector.rotateVactor(theta * j), scaledVertex);
 
-        Vertex newVerticesFromVector = Vertex(x: newVector.x, y: newVector.y, body: body, index: j);
+        Vertex newVerticesFromVector = Vertex(x: newVector.x, y: newVector.y, index: j);
 
         newVertices.add(newVerticesFromVector);
       }
@@ -288,18 +283,14 @@ class Vertices {
 
 class Vertex extends Vector {
   final int index;
-  final Body body;
+  final Body? body;
   final bool isInternal;
 
   Vertex({
     required double x,
     required double y,
     required this.index,
-    required this.body,
+    this.body,
     this.isInternal = false,
   }) : super(x, y);
-
-  // Vector toVector() {
-  //   return Vector(x, y);
-  // }
 }
