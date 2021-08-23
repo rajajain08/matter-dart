@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:matter_dart/src/body/body.dart';
+import 'package:matter_dart/src/body/support/models.dart';
 import 'package:matter_dart/src/core/sleeping.dart';
 import 'package:matter_dart/src/geometry/axes.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
