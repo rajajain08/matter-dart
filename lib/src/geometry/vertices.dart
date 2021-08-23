@@ -195,7 +195,7 @@ class Vertices {
     return newVertices;
   }
 
-  List<Vertex> clockwiseSort(List<Vertex> vertices) {
+  static List<Vertex> clockwiseSort(List<Vertex> vertices) {
     var centre = mean(vertices);
 
     vertices.sort((vertexA, vertexB) {
@@ -205,7 +205,7 @@ class Vertices {
     return vertices;
   }
 
-  bool? isConvex(List<Vertex> vertices) {
+  static bool? isConvex(List<Vertex> vertices) {
     // http://paulbourke.net/geometry/polygonmesh/
     // Copyright (c) Paul Bourke (use permitted)
 
@@ -237,7 +237,7 @@ class Vertices {
     }
   }
 
-  List<Vertex> hull(List<Vertex> vertices) {
+  static List<Vertex> hull(List<Vertex> vertices) {
     // http://geomalgorithms.com/a10-_hull-1.html
 
     var upper = <Vertex>[], lower = <Vertex>[];

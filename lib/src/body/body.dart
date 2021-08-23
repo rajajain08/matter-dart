@@ -1,6 +1,8 @@
 import 'dart:math' as math;
+import 'dart:ui';
 
 import 'package:matter_dart/matter_dart.dart';
+import 'package:matter_dart/src/core/sleeping.dart';
 import 'package:matter_dart/src/geometry/bounds.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
 import 'package:matter_dart/src/geometry/vertices.dart';
@@ -12,6 +14,8 @@ import 'support/models.dart';
 /// All properties have default values, and many are pre-calculated automatically based on other properties.
 /// Vertices must be specified in clockwise order.
 class Body {
+  Body();
+
   static const int _inertiaScale = 4;
   int _nextCollidingGroupId = 1;
   int _nextNonCollidingGroupId = -1;
@@ -63,6 +67,56 @@ class Body {
   double inverseInertia = 0;
   int sleepCounter = 0;
   Region? region;
+
+  factory Body.create(BodyOptions options) {
+    Body body = Body();
+
+    // Merge user defined options into the default ones
+    _merge(body, options);
+
+    // Initialises body properties.
+    _initProperties(body, options);
+
+    return body;
+  }
+
+  /// Initialize body properties (Order is important).
+  static void _initProperties(Body body, BodyOptions options) {
+    body.bounds = body.bounds ?? Bounds.fromVertices(body.vertices);
+    body.positionPrev = body.positionPrev ?? Vector(body.position.x, body.position.y);
+    body.anglePrev = body.anglePrev != 0 ? body.anglePrev : body.angle;
+    body.setVertices(body.vertices);
+    body.setParts(body.parts.length == 0 ? [body] : body.parts);
+    body.setStatic(body.isStatic);
+    Sleeping.set(body, body.isSleeping);
+    body.parent = body.parent ?? body;
+
+    body.vertices = Vertices.rotate(body.vertices, body.angle, body.position);
+    Axes.rotate(body.axes, body.angle);
+    body.bounds!.update(body.vertices, body.velocity);
+
+    // Allow options to override automatically calculated properties.
+    body.axes = options.axes ?? body.axes;
+    body.area = options.area ?? body.area;
+    body.setMass(options.mass ?? body.mass);
+    body.setInertia(options.inertia ?? body.inertia);
+
+    // Rendering properties.
+    Color defaultFillStyle = body.isStatic
+        ? Color(0xFF14151F)
+        : Common.chooseRandom<Color>(
+            [Color(0xFFf19648), Color(0xFFf5d259), Color(0xFFf55a3c), Color(0xFF063e7b), Color(0xFFececd1)],
+          );
+    Color defaultStrokeStyle = body.isStatic ? Color(0xFF555555) : Color(0xFFCCCCCC);
+    double defaultLineWidth = body.isStatic && body.render.fillStyle == null ? 1 : 0;
+    body.render.fillStyle = body.render.fillStyle ?? defaultFillStyle;
+    body.render.strokeStyle = body.render.strokeStyle ?? defaultStrokeStyle;
+    body.render.lineWidth = body.render.lineWidth ?? defaultLineWidth;
+    body.render.sprite.xOffset +=
+        -(body.bounds!.min.dx - body.position.x) / (body.bounds!.max.dx - body.bounds!.min.dx);
+    body.render.sprite.yOffset +=
+        -(body.bounds!.min.dy - body.position.y) / (body.bounds!.max.dy - body.bounds!.min.dy);
+  }
 
   /// Returns the next unique group index for which bodies will collide.
   int nextGroup([bool isNonColliding = false]) {
@@ -173,7 +227,53 @@ class Body {
 
   /// Sets the parts of the `body` and updates mass, inertia and centroid.
   void setParts(List<Body> newParts, [bool autoHull = true]) {
-    // TODO:
+    final List<Body> parts = [...newParts];
+
+    // Add all the parts, ensuring that the first part is always the body
+    this.parts.clear();
+    this.parts.add(this);
+    this.parent = this;
+
+    for (int index = 0; index < parts.length; index++) {
+      Body part = parts[index];
+      if (part != this) {
+        part.parent = this;
+        this.parts.add(part);
+      }
+    }
+
+    if (this.parts.length == 1) return;
+
+    // Find the convex hull of all parts to set on the parent body`
+    if (autoHull) {
+      List<Vertex> vertices = <Vertex>[];
+      for (int index = 0; index < parts.length; index++) {
+        vertices.addAll(parts[index].vertices);
+      }
+
+      vertices = Vertices.clockwiseSort(vertices);
+
+      final List<Vertex> hull = Vertices.hull(vertices);
+      Vector hullCentre = Vertices.centre(hull);
+
+      this.setVertices(hull);
+      this.vertices = Vertices.translate(this.vertices, hullCentre);
+    }
+
+    // Sum the properties of all compounds parts of the parent body
+    BodyOptions total = _totalProperties();
+
+    this
+      ..area = total.area!
+      ..parent = this
+      ..position.x = total.centre!.x
+      ..position.y = total.centre!.y
+      ..positionPrev!.x = total.centre!.x
+      ..positionPrev!.y = total.centre!.y;
+
+    this.setMass(total.mass!);
+    this.setInertia(total.inertia!);
+    this.setPosition(total.centre!);
   }
 
   /// Set the centre of mass of the body. The `centre` is a vector in world-space
@@ -375,7 +475,73 @@ class Body {
   }
 
   /// Returns the sums of the properties of all compound parts of the parent body.
-  void _totalProperties() {
-    // TODO:
+  BodyOptions _totalProperties() {
+    BodyOptions properties = BodyOptions(
+      mass: 0,
+      area: 0,
+      inertia: 0,
+      centre: Vector(0, 0),
+    );
+
+    // sum the properties of all compound parts of the parent body
+    for (int index = parts.length == 1 ? 0 : 1; index < parts.length; index++) {
+      Body part = parts[index];
+      double mass = part.mass != double.infinity ? part.mass : index.toDouble();
+
+      properties
+        ..mass = properties.mass! + mass
+        ..area = properties.area! + part.area
+        ..inertia = properties.inertia! + part.inertia
+        ..centre = Vector.add(properties.centre!, Vector.mult(part.position, mass));
+    }
+
+    properties.centre = Vector.div(properties.centre!, properties.mass!);
+
+    return properties;
+  }
+
+  /// Merge user defined options with the default ones.
+  static void _merge(Body body, BodyOptions options) {
+    body.parts = options.parts ?? body.parts;
+    body.angle = options.angle ?? body.angle;
+    body.vertices = options.vertices ?? body.vertices;
+    body.position = options.position ?? body.position;
+    body.force = options.force ?? body.force;
+    body.torque = options.torque ?? body.torque;
+    body.positionImpulse = options.positionImpulse ?? body.positionImpulse;
+    body.constraintImpulse = options.constraintImpulse ?? body.constraintImpulse;
+    body.totalContacts = options.totalContacts ?? body.totalContacts;
+    body.speed = options.speed ?? body.speed;
+    body.angularSpeed = options.angularSpeed ?? body.angularSpeed;
+    body.velocity = options.velocity ?? body.velocity;
+    body.angularVelocity = options.angularVelocity ?? body.angularVelocity;
+    body.isSensor = options.isSensor ?? body.isSensor;
+    body.isStatic = options.isStatic ?? body.isStatic;
+    body.isSleeping = options.isSleeping ?? body.isSleeping;
+    body.motion = options.motion ?? body.motion;
+    body.sleepThreshold = options.sleepThreshold ?? body.sleepThreshold;
+    body.density = options.density ?? body.density;
+    body.restitution = options.restitution ?? body.restitution;
+    body.friction = options.friction ?? body.friction;
+    body.frictionStatic = options.frictionStatic ?? body.frictionStatic;
+    body.frictionAir = options.frictionAir ?? body.frictionAir;
+    body.collisionFilter = options.collisionFilter ?? body.collisionFilter;
+    body.slop = options.slop ?? body.slop;
+    body.timescale = options.timescale ?? body.timescale;
+    body.render = options.render ?? body.render;
+    body.bounds = options.bounds ?? body.bounds;
+    body.chamfer = options.chamfer ?? body.chamfer;
+    body.circleRadius = options.circleRadius ?? body.circleRadius;
+    body.positionPrev = options.positionPrev ?? body.positionPrev;
+    body.anglePrev = options.anglePrev ?? body.anglePrev;
+    body.parent = options.parent ?? body.parent;
+    body.axes = options.axes ?? body.axes;
+    body.area = options.area ?? body.area;
+    body.mass = options.mass ?? body.mass;
+    body.inverseMass = options.inverseMass ?? body.inverseMass;
+    body.inertia = options.inertia ?? body.inertia;
+    body.inverseInertia = options.inverseInertia ?? body.inverseInertia;
+    body.sleepCounter = options.sleepCounter ?? body.sleepCounter;
+    body.region = options.region ?? body.region;
   }
 }

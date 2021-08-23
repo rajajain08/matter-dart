@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:matter_dart/src/body/body.dart';
 import 'package:matter_dart/src/collision/collision.dart';
 import 'package:matter_dart/src/geometry/bounds.dart';
@@ -47,6 +49,7 @@ class BodyOptions {
   double? inverseInertia;
   int? sleepCounter;
   Region? region;
+  Vector? centre;
 
   BodyOptions({
     this.parts,
@@ -90,6 +93,7 @@ class BodyOptions {
     this.inverseInertia,
     this.sleepCounter,
     this.region,
+    this.centre,
   });
 }
 
@@ -121,9 +125,9 @@ class BodyConstraintImpulse extends Vector {
 class BodyRenderOptions {
   bool visible = true;
   double opacity = 1.0;
-  String? fillStyle;
-  String? strokeStyle;
-  double lineWidth = 1.5;
+  Color? fillStyle;
+  Color? strokeStyle;
+  double? lineWidth;
   BodyRenderOptionsSprite sprite = BodyRenderOptionsSprite();
 }
 
