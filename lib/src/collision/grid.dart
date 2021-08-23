@@ -28,20 +28,10 @@ class Grid {
   /// Updates the grid.
   void update(List<Body> bodies, Engine engine, bool forceUpdate) {
     bool gridChanged = false;
-    Composite world = engine.world!;
 
     for (int index = 0; index < bodies.length; index++) {
       Body body = bodies[index];
       if (body.isSleeping && !forceUpdate) continue;
-
-      // Temporary back compatibility bounds check.
-      if (world.bounds != null &&
-          (body.bounds!.max.dx < world.bounds!.min.dx ||
-              body.bounds!.min.dx > world.bounds!.max.dx ||
-              body.bounds!.max.dy < world.bounds!.min.dy ||
-              body.bounds!.min.dy > world.bounds!.max.dy)) {
-        continue;
-      }
 
       Region newRegion = _getRegion(body);
 

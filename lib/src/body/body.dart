@@ -13,8 +13,8 @@ import 'support/models.dart';
 /// [Body] contains methods for creating and manipulating body models.
 /// All properties have default values, and many are pre-calculated automatically based on other properties.
 /// Vertices must be specified in clockwise order.
-class Body {
-  Body();
+class Body extends MatterObject {
+  Body() : super(type: 'body');
 
   static const int _inertiaScale = 4;
   int _nextCollidingGroupId = 1;
@@ -23,8 +23,7 @@ class Body {
   Body? original;
 
   int id = ID.instance.nextID;
-  String type = 'body';
-  String label = 'Body';
+  static const String label = 'Body';
 
   List<Body> parts = <Body>[];
   double angle = 0;
