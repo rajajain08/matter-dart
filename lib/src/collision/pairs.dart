@@ -74,7 +74,7 @@ class Pairs {
     }
   }
 
-  void removeOld(Pair pair, DateTime timeStamp) {
+  void removeOld(DateTime timeStamp) {
     Collision collision;
     String pairId;
     Pair? pair;

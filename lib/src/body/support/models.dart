@@ -10,6 +10,7 @@ import 'package:matter_dart/src/geometry/vertices.dart';
 
 /// Options for [Body] model.
 class BodyOptions {
+  String? label;
   List<Body>? parts;
   double? angle;
   List<Vertex>? vertices;
@@ -54,6 +55,7 @@ class BodyOptions {
   Vector? centre;
 
   BodyOptions({
+    this.label,
     this.parts,
     this.angle,
     this.vertices,

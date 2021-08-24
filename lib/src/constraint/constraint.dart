@@ -75,7 +75,7 @@ class Constraint extends MatterObject {
   }
 
   /// Prepares for solving by constraint warming.
-  void preSolveAll(List<Body> bodies) {
+  static void preSolveAll(List<Body> bodies) {
     for (int index = 0; index < bodies.length; index++) {
       Body body = bodies[index];
       BodyConstraintImpulse impulse = body.constraintImpulse;
@@ -91,7 +91,7 @@ class Constraint extends MatterObject {
   }
 
   /// Solves all constraints in a list of collisions.
-  void solveAll(List<Constraint> constraints, double timescale) {
+  static void solveAll(List<Constraint> constraints, double timescale) {
     // Solve fixed constraints.
     for (int index = 0; index < constraints.length; index++) {
       Constraint constraint = constraints[index];
@@ -116,7 +116,7 @@ class Constraint extends MatterObject {
   }
 
   /// Solves a distance constraint with Gauss-Siedel method.
-  void solve(Constraint constraint, double timescale) {
+  static void solve(Constraint constraint, double timescale) {
     Body? bodyA = constraint.bodyA, bodyB = constraint.bodyB;
     Vector pointA = constraint.pointA, pointB = constraint.pointB;
 
@@ -221,7 +221,7 @@ class Constraint extends MatterObject {
   }
 
   /// Performs body updates required after solving constraints.
-  void postSolveAll(List<Body> bodies) {
+  static void postSolveAll(List<Body> bodies) {
     for (int index = 0; index < bodies.length; index++) {
       Body body = bodies[index];
       BodyConstraintImpulse impulse = body.constraintImpulse;
