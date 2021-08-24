@@ -1,7 +1,9 @@
 import 'dart:ui';
 
 import 'package:matter_dart/src/body/body.dart';
+import 'package:matter_dart/src/body/composite.dart';
 import 'package:matter_dart/src/collision/collision.dart';
+import 'package:matter_dart/src/constraint/constraint.dart';
 import 'package:matter_dart/src/geometry/bounds.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
 import 'package:matter_dart/src/geometry/vertices.dart';
@@ -144,4 +146,24 @@ class ChamferOptions {
   double? quality;
   double? qualityMin;
   double? qualityMax;
+}
+
+class CompositeOptions {
+  int? id;
+  String? label;
+  Composite? parent;
+  bool? isModified;
+  List<Body>? bodies;
+  List<Composite>? composites;
+  List<Constraint>? constraints;
+
+  CompositeOptions({
+    this.id,
+    this.label,
+    this.parent,
+    this.isModified,
+    this.bodies,
+    this.composites,
+    this.constraints,
+  });
 }

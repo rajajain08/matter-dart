@@ -5,19 +5,22 @@ import 'package:matter_dart/src/core/sleeping.dart';
 import 'package:matter_dart/src/geometry/axes.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
 import 'package:matter_dart/src/geometry/vertices.dart';
+import 'package:matter_dart/src/utils/common.dart';
 import 'package:matter_dart/src/utils/enums.dart';
 
 /// Constraints are used for specifying that a fixed distance must be maintained between two bodies (or a body and a fixed world-space position).
 ///
 /// The stiffness of constraints can be modified to create springs or elastic.
-class Constraint {
+class Constraint extends MatterObject {
   static const double _warming = 0.4;
   static const double _torqueDampen = 1;
   static const double _minLength = 0.000001;
 
+  late int id;
+  String label = 'Constraint';
+
   Body? bodyA;
   Body? bodyB;
-  String label;
   double stiffness;
   double damping;
   double angularStiffness;
@@ -29,9 +32,9 @@ class Constraint {
   late double angleB;
 
   Constraint({
+    int? id,
     this.bodyA,
     this.bodyB,
-    this.label = 'Constraint',
     this.stiffness = 1.0,
     this.damping = 0,
     this.angularStiffness = 0,
@@ -41,7 +44,9 @@ class Constraint {
     ConstraintRenderOptions? render,
     double angleA = 0,
     double angleB = 0,
-  }) {
+  }) : super(type: 'constraint') {
+    this.id = id ?? ID.instance.nextID;
+
     // If bodies defined but no points, use body centre
     if (bodyA != null && pointA == null) {
       this.pointA = Vector(0, 0);

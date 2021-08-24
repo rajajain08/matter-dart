@@ -1,5 +1,11 @@
 import 'dart:math';
 
+class MatterObject {
+  final String type;
+
+  MatterObject({required this.type});
+}
+
 class Common {
   static clamp(double value, min, max) {
     if (value < min) return min;
