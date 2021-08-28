@@ -28,7 +28,7 @@ class Pairs {
     );
   }
 
-  void update(List<Collision> collisions, DateTime timeStamp) {
+  void update(List<Collision> collisions, double timeStamp) {
     Collision collision;
     String pairId;
     Pair? pair;
@@ -74,7 +74,7 @@ class Pairs {
     }
   }
 
-  void removeOld(DateTime timeStamp) {
+  void removeOld(double timeStamp) {
     Collision collision;
     String pairId;
     Pair? pair;
@@ -91,7 +91,7 @@ class Pairs {
       }
 
       // if pair is inactive for too long, mark it to be removed
-      if (timeStamp.difference(pair.timeUpdated).inMilliseconds > pairMaxIdleLife) {
+      if (pair.timeUpdated > pairMaxIdleLife) {
         indexesToRemove.add(i);
       }
     }

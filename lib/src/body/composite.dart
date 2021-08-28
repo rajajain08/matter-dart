@@ -35,7 +35,7 @@ class Composite extends MatterObject {
       ..composites = options.composites ?? composite.composites
       ..constraints = options.constraints ?? composite.constraints;
 
-    return Composite();
+    return composite;
   }
 
   /// Sets the composite's `isModified` flag.

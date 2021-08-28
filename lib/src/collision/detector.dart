@@ -10,7 +10,7 @@ class Detector {
   /// Finds all collisions given a list of pairs.
   static List<Collision> collisions(List<GridPair> broadphasePairs, Engine engine) {
     List<Collision> collisions = [];
-    Map<String, Pair> pairsTable = engine.pairs.table;
+    Map<String, Pair> pairsTable = engine.pairs?.table ?? {};
 
     for (int index = 0; index < broadphasePairs.length; index++) {
       Body bodyA = broadphasePairs[index].body1;

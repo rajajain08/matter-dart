@@ -1,6 +1,7 @@
 import 'package:matter_dart/src/body/body.dart';
 import 'package:matter_dart/src/body/composite.dart';
 import 'package:matter_dart/src/body/support/models.dart';
+import 'package:matter_dart/src/collision/collision.dart';
 import 'package:matter_dart/src/collision/detector.dart';
 import 'package:matter_dart/src/collision/grid.dart';
 import 'package:matter_dart/src/collision/pairs.dart';
@@ -34,7 +35,7 @@ class Engine {
 
   Composite? world;
 
-  late Pairs pairs;
+  Pairs? pairs;
 
   Engine({
     this.positionIterations = 6,
@@ -44,6 +45,7 @@ class Engine {
     EngineGravityOptions? gravity,
     EngineTimingOptions? timing,
     this.world,
+    this.pairs,
   }) {
     // this.gravity = gravity ?? EngineGravityOptions(x: 0, y: 1, scale: 0.001);
     // this.timing = timing ?? EngineTimingOptions(timeScale: 1);
@@ -104,10 +106,11 @@ class Engine {
     }
 
     // narrowphase pass: find actual collisions, then create or update collision pairs
-    var collisions = Detector.collisions(gridPairs, this);
+    List<Collision> collisions = Detector.collisions(gridPairs, this);
 
     // update collision pairs
-    var pairs = this.pairs, timestamp = timing.timestamp;
+    Pairs pairs = this.pairs ?? Pairs.create();
+    double timestamp = timing.timestamp;
     pairs.update(collisions, timestamp);
     pairs.removeOld(timestamp);
 
@@ -226,7 +229,7 @@ class EngineTimingOptions {
 class EngineGravityOptions extends Vector {
   double scale;
 
-  EngineGravityOptions({required this.scale, required x, required y}) : super(x, y);
+  EngineGravityOptions({required this.scale, required double x, required double y}) : super(x, y);
 }
 
 class EngineOptions {
@@ -251,4 +254,17 @@ class EngineOptions {
   Composite? world;
 
   Pairs? pairs;
+
+  EngineOptions(
+      {this.positionIterations,
+      this.velocityIterations,
+      this.constraintIterations,
+      this.enableSleeping,
+      this.events,
+      this.grid,
+      this.broadphase,
+      this.gravity,
+      this.timing,
+      this.world,
+      this.pairs});
 }
