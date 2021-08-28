@@ -212,7 +212,7 @@ class Composite extends MatterObject {
 
   /// Returns all bodies in the given composite, including all bodies in its children, recursively.
   List<Body> allBodies() {
-    List<Body> _allBodies = [];
+    List<Body> _allBodies = []..addAll(this.bodies);
 
     for (int index = 0; index < this.composites.length; index++) {
       _allBodies.addAll(this.composites[index].allBodies());

@@ -35,11 +35,14 @@ class _MyHomePageState extends State<MyHomePage> {
     Engine engine = Engine.create(EngineOptions(
         world: Composite.create(CompositeOptions(bodies: [Bodies.rectangle(0, 0, 20, 20, BodyOptions())]))));
     _runner.run((dt, correction) {
-      print('$counter -> dt: $dt \t correction: $correction');
-      engine.update(dt, correction);
-      print(" here speed -->  ${engine.world?.bodies.first.position.y}");
-      counter++;
-    }, engineTiming: EngineTimingOptions(timeScale: 0.1));
+      if (correction.isFinite) {
+        print('$counter -> dt: $dt \t correction: $correction');
+
+        engine.update(dt, correction);
+        print(" here speed -->  ${engine.world?.bodies.first.speed}");
+        counter++;
+      }
+    }, engineTiming: EngineTimingOptions(timeScale: 1.1));
   }
 
   @override
