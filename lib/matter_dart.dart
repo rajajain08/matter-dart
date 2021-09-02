@@ -9,6 +9,11 @@ export 'src/collision/pair.dart';
 export 'src/core/engine.dart';
 export 'src/core/runner.dart';
 
+export 'src/body/composite.dart';
+export 'src/body/support/models.dart';
+
+export 'src/factory/bodies.dart';
+
 export 'src/geometry/axes.dart';
 export 'src/geometry/bounds.dart';
 export 'src/geometry/vector.dart';

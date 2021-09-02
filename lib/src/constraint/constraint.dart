@@ -5,19 +5,22 @@ import 'package:matter_dart/src/core/sleeping.dart';
 import 'package:matter_dart/src/geometry/axes.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
 import 'package:matter_dart/src/geometry/vertices.dart';
+import 'package:matter_dart/src/utils/common.dart';
 import 'package:matter_dart/src/utils/enums.dart';
 
 /// Constraints are used for specifying that a fixed distance must be maintained between two bodies (or a body and a fixed world-space position).
 ///
 /// The stiffness of constraints can be modified to create springs or elastic.
-class Constraint {
+class Constraint extends MatterObject {
   static const double _warming = 0.4;
   static const double _torqueDampen = 1;
   static const double _minLength = 0.000001;
 
+  late int id;
+  String label = 'Constraint';
+
   Body? bodyA;
   Body? bodyB;
-  String label;
   double stiffness;
   double damping;
   double angularStiffness;
@@ -29,9 +32,9 @@ class Constraint {
   late double angleB;
 
   Constraint({
+    int? id,
     this.bodyA,
     this.bodyB,
-    this.label = 'Constraint',
     this.stiffness = 1.0,
     this.damping = 0,
     this.angularStiffness = 0,
@@ -41,7 +44,9 @@ class Constraint {
     ConstraintRenderOptions? render,
     double angleA = 0,
     double angleB = 0,
-  }) {
+  }) : super(type: 'constraint') {
+    this.id = id ?? ID.instance.nextID;
+
     // If bodies defined but no points, use body centre
     if (bodyA != null && pointA == null) {
       this.pointA = Vector(0, 0);
@@ -70,7 +75,7 @@ class Constraint {
   }
 
   /// Prepares for solving by constraint warming.
-  void preSolveAll(List<Body> bodies) {
+  static void preSolveAll(List<Body> bodies) {
     for (int index = 0; index < bodies.length; index++) {
       Body body = bodies[index];
       BodyConstraintImpulse impulse = body.constraintImpulse;
@@ -86,7 +91,7 @@ class Constraint {
   }
 
   /// Solves all constraints in a list of collisions.
-  void solveAll(List<Constraint> constraints, double timescale) {
+  static void solveAll(List<Constraint> constraints, double timescale) {
     // Solve fixed constraints.
     for (int index = 0; index < constraints.length; index++) {
       Constraint constraint = constraints[index];
@@ -111,7 +116,7 @@ class Constraint {
   }
 
   /// Solves a distance constraint with Gauss-Siedel method.
-  void solve(Constraint constraint, double timescale) {
+  static void solve(Constraint constraint, double timescale) {
     Body? bodyA = constraint.bodyA, bodyB = constraint.bodyB;
     Vector pointA = constraint.pointA, pointB = constraint.pointB;
 
@@ -216,7 +221,7 @@ class Constraint {
   }
 
   /// Performs body updates required after solving constraints.
-  void postSolveAll(List<Body> bodies) {
+  static void postSolveAll(List<Body> bodies) {
     for (int index = 0; index < bodies.length; index++) {
       Body body = bodies[index];
       BodyConstraintImpulse impulse = body.constraintImpulse;

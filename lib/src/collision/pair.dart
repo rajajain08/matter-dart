@@ -13,9 +13,9 @@ class Pair {
   final Body parentA;
   final Body parentB;
   final isSensor;
-  final DateTime timeStamp;
-  final DateTime timeCreated;
-  DateTime timeUpdated;
+  final double timeStamp;
+  final double timeCreated;
+  double timeUpdated;
   double inverseMass;
   double friction;
   final double frictionStatic;
@@ -44,7 +44,7 @@ class Pair {
         restitution = math.max(collision.parentA!.restitution, collision.parentB!.restitution),
         slop = math.max(collision.parentA!.slop, collision.parentB!.slop);
 
-  void setActive(bool isActive, DateTime timeStamp) {
+  void setActive(bool isActive, double timeStamp) {
     if (isActive) {
       isActive = true;
       timeUpdated = timeStamp;
@@ -54,7 +54,7 @@ class Pair {
     }
   }
 
-  void update(Collision updatedCollision, DateTime timestamp) {
+  void update(Collision updatedCollision, double timestamp) {
     collision = updatedCollision;
     inverseMass = parentA.inverseMass + parentB.inverseMass;
     friction = math.max(parentA.frictionStatic, parentB.frictionStatic);
