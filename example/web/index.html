@@ -79,11 +79,8 @@
     <div class="label">Loading physics engine…</div>
   </div>
 
-  <script src="flutter.js" defer></script>
   <script>
     (function () {
-      var serviceWorkerVersion = "{{flutter_service_worker_version}}";
-
       function hideLoading() {
         var el = document.getElementById('loading');
         if (!el || el.classList.contains('fade')) return;
@@ -104,27 +101,11 @@
       observer.observe(document.body, { childList: true, subtree: true });
 
       setTimeout(hideLoading, 15000);
-
-      window.addEventListener('load', function () {
-        if (!window._flutter || !_flutter.loader) {
-          var s = document.createElement('script');
-          s.src = 'main.dart.js';
-          s.type = 'application/javascript';
-          document.body.append(s);
-          return;
-        }
-        _flutter.loader.load({
-          serviceWorker: {
-            serviceWorkerVersion: serviceWorkerVersion,
-          },
-          onEntrypointLoaded: function (engineInitializer) {
-            engineInitializer.initializeEngine().then(function (appRunner) {
-              return appRunner.runApp();
-            });
-          },
-        });
-      });
     })();
+  </script>
+
+  <script>
+    {{flutter_bootstrap_js}}
   </script>
 </body>
 </html>
