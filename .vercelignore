@@ -1,0 +1,10 @@
+flutter/
+build/
+build-web/
+example/build/
+.dart_tool/
+example/.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+example/.flutter-plugins
+example/.flutter-plugins-dependencies
