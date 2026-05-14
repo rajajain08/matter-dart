@@ -1,8 +1,41 @@
+<div align="center">
+
 # matter_dart
 
-A Flutter-friendly 2D physics engine inspired by [Matter.js](https://brm.io/matter-js/), written in Dart.
+**A Flutter-friendly 2D rigid-body physics engine inspired by [Matter.js](https://brm.io/matter-js/), written in Dart.**
+
+[![pub package](https://img.shields.io/pub/v/matter_dart.svg)](https://pub.dev/packages/matter_dart)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/demo-matter--dart.vercel.app-0B0C14?logo=vercel&logoColor=white)](https://matter-dart.vercel.app)
+[![Buy Me A Coffee](https://img.shields.io/badge/buy%20me%20a%20coffee-rajajain08-FFDD00?logo=buymeacoffee&logoColor=000)](https://buymeacoffee.com/rajajain08)
+
+[**Live Demo**](https://matter-dart.vercel.app) · [pub.dev](https://pub.dev/packages/matter_dart) · [Issues](https://github.com/rajajain08/matter-dart/issues) · [Contributing](#contributing)
+
+</div>
+
+---
 
 `matter_dart` gives Flutter apps a rigid-body simulation toolkit for interactive demos, games, prototypes, and physics-driven UI. It includes engines, bodies, composites, constraints, collision handling, geometry helpers, and an optional Flutter painter for rendering worlds.
+
+## Live Demo
+
+Try the full interactive demo gallery in your browser — ten built-in scenes you can play with right now:
+
+> **[matter-dart.vercel.app](https://matter-dart.vercel.app)**
+
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Flutter Rendering](#flutter-rendering)
+- [Demos](#demos)
+- [API Scope](#api-scope)
+- [Publishing And Maintenance](#publishing-and-maintenance)
+- [Contributing](#contributing)
+- [Support](#support)
+- [Contributors](#contributors)
+- [License](#license)
 
 ## Features
 
@@ -83,7 +116,24 @@ CustomPaint(
 )
 ```
 
-For a complete UI, see the Flutter demo app in `example/`. It includes multiple interactive scenes such as plinko, a ball pit, Newton's cradle, mixed shapes, chains, and stress demos.
+For a complete UI, see the Flutter demo app in `example/`.
+
+## Demos
+
+The example app ships ten interactive scenes — each one is a self-contained `Demo` registered in [`example/lib/demos/demo_registry.dart`](example/lib/demos/demo_registry.dart). Use any of them as a starting template for your own scene.
+
+| Demo | What it shows |
+|------|---------------|
+| Ball Pit | Circles in a bounded enclosure with friction |
+| Plinko | Fixed pegs, falling discs, scoring ramps |
+| Newton's Cradle | A row of constrained pendula |
+| Wrecking Ball | Constraint-driven destruction |
+| Pyramid | Stacked rectangles, stability under gravity |
+| Chain | Soft-link constraints |
+| Mixed Shapes | Polygons of varying density |
+| Mixed Soup | Heterogeneous body soup |
+| Restitution | Bounce coefficients across materials |
+| Stress | Many bodies, performance test |
 
 ## API Scope
 
@@ -105,6 +155,35 @@ Before publishing a release, run:
 flutter test
 flutter pub publish --dry-run
 ```
+
+## Contributing
+
+`matter_dart` is open source and contributions are very welcome — bug reports, feature ideas, demos, docs, and pull requests all help.
+
+**Ways to help:**
+
+- **Found a bug?** [Open an issue](https://github.com/rajajain08/matter-dart/issues/new) and describe what you expected vs. what happened. A minimal repro snippet helps a lot.
+- **Have an idea or feature request?** [Start a discussion](https://github.com/rajajain08/matter-dart/issues/new) with the `enhancement` label.
+- **Want to contribute code?** Fork the repo, branch off `main`, and open a Pull Request. Please run `flutter test` and `flutter analyze` before pushing, and add tests where reasonable.
+- **Want to add a demo?** Drop a new file in `example/lib/demos/`, register it in `demo_registry.dart`, and open a PR. New scene ideas (cars, pegs, soft bodies, particle systems, etc.) are especially welcome.
+
+There's no formal CLA. Be kind in code review, assume good intent, and ship.
+
+## Support
+
+If `matter_dart` has been useful in your project, you can support the author here:
+
+<a href="https://buymeacoffee.com/rajajain08" target="_blank"><img src="https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=&slug=rajajain08&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy Me A Coffee" height="48"/></a>
+
+Or just star the repo — it genuinely helps with visibility.
+
+## Contributors
+
+Thanks to everyone who has contributed to `matter_dart`:
+
+<a href="https://github.com/rajajain08/matter-dart/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=rajajain08/matter-dart" alt="Contributors" />
+</a>
 
 ## License
 
