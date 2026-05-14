@@ -19,15 +19,21 @@ class Bounds {
 
   /// Updates bounds using the given vertices, and extend the bounds if given a velocity.
   void update(List<Vertex> vertices, [Vector? velocity]) {
+    if (vertices.isEmpty) return;
     this.min = Offset.infinite;
-    this.max = Offset.infinite;
+    this.max = const Offset(double.negativeInfinity, double.negativeInfinity);
 
     vertices.forEach((vertex) {
+      if (!vertex.x.isFinite || !vertex.y.isFinite) return;
       if (vertex.x > max.dx) max = Offset(vertex.x, max.dy);
       if (vertex.x < min.dx) min = Offset(vertex.x, min.dy);
       if (vertex.y > max.dy) max = Offset(max.dx, vertex.y);
       if (vertex.y < min.dy) min = Offset(min.dx, vertex.y);
     });
+
+    if (!min.dx.isFinite || !min.dy.isFinite || !max.dx.isFinite || !max.dy.isFinite) {
+      return;
+    }
 
     if (velocity != null) {
       if (velocity.x > 0) {

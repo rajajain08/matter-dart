@@ -260,6 +260,12 @@ class Resolver {
           bodyA.positionPrev?.y += impulse.y * bodyA.inverseMass;
           bodyA.anglePrev += Vector.cross(offsetA, impulse) * bodyA.inverseInertia;
         }
+
+        if (!(bodyB.isStatic || bodyB.isSleeping)) {
+          bodyB.positionPrev?.x -= impulse.x * bodyB.inverseMass;
+          bodyB.positionPrev?.y -= impulse.y * bodyB.inverseMass;
+          bodyB.anglePrev -= Vector.cross(offsetB, impulse) * bodyB.inverseInertia;
+        }
       }
     }
   }

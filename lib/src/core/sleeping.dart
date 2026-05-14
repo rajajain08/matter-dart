@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:matter_dart/src/body/body.dart';
 import 'package:matter_dart/src/collision/collision.dart';
 import 'package:matter_dart/src/collision/pair.dart';
+import 'package:matter_dart/src/geometry/vector.dart';
 
 /// Contains methods to manage the sleeping state of bodies.
 class Sleeping {
@@ -26,7 +27,7 @@ class Sleeping {
       }
 
       double minMotion = math.min(body.motion, motion);
-      double maxMotion = math.min(body.motion, motion);
+      double maxMotion = math.max(body.motion, motion);
 
       // Biased average motion estimation between frames
       body.motion = Sleeping._minBias * minMotion + (1 - Sleeping._minBias) * maxMotion;
@@ -80,8 +81,9 @@ class Sleeping {
       body.positionImpulse.x = 0;
       body.positionImpulse.y = 0;
 
-      body.positionPrev?.x = body.position.x;
-      body.positionPrev?.y = body.position.y;
+      body.positionPrev ??= Vector(body.position.x, body.position.y);
+      body.positionPrev!.x = body.position.x;
+      body.positionPrev!.y = body.position.y;
 
       body.anglePrev = body.angle;
       body.speed = 0;

@@ -48,12 +48,8 @@ class Constraint extends MatterObject {
     this.id = id ?? ID.instance.nextID;
 
     // If bodies defined but no points, use body centre
-    if (bodyA != null && pointA == null) {
-      this.pointA = Vector(0, 0);
-    }
-    if (bodyB != null && pointB == null) {
-      this.pointB = Vector(0, 0);
-    }
+    this.pointA = pointA ?? Vector(0, 0);
+    this.pointB = pointB ?? Vector(0, 0);
 
     // Calculate static length using initial world space points
     Vector initialPointA = this.bodyA != null ? Vector.add(this.bodyA!.position, this.pointA) : this.pointA;
@@ -122,15 +118,22 @@ class Constraint extends MatterObject {
 
     if (bodyA == null && bodyB == null) return;
 
-    // Update reference angle.
+    // Update reference angle (rotate the body-local anchor in place so the
+    // rotation persists between frames; matter.js does Vector.rotate(pointA, dt, pointA)).
     if (bodyA != null && !bodyA.isStatic) {
-      pointA = pointA.rotateVactor(bodyA.angle - constraint.angleA);
+      final rotated = constraint.pointA.rotateVactor(bodyA.angle - constraint.angleA);
+      constraint.pointA.x = rotated.x;
+      constraint.pointA.y = rotated.y;
       constraint.angleA = bodyA.angle;
+      pointA = constraint.pointA;
     }
 
     if (bodyB != null && !bodyB.isStatic) {
-      pointB = pointB.rotateVactor(bodyB.angle - constraint.angleB);
+      final rotated = constraint.pointB.rotateVactor(bodyB.angle - constraint.angleB);
+      constraint.pointB.x = rotated.x;
+      constraint.pointB.y = rotated.y;
       constraint.angleB = bodyB.angle;
+      pointB = constraint.pointB;
     }
 
     Vector pointAWorld = pointA, pointBWorld = pointB;

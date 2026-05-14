@@ -2,13 +2,6 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:matter_dart/matter_dart.dart';
-import 'package:matter_dart/src/core/sleeping.dart';
-import 'package:matter_dart/src/geometry/bounds.dart';
-import 'package:matter_dart/src/geometry/vector.dart';
-import 'package:matter_dart/src/geometry/vertices.dart';
-import 'package:matter_dart/src/utils/common.dart';
-
-import 'support/models.dart';
 
 /// [Body] contains methods for creating and manipulating body models.
 /// All properties have default values, and many are pre-calculated automatically based on other properties.
@@ -17,9 +10,11 @@ class Body extends MatterObject {
   Body() : super(type: 'body');
 
   static const int _inertiaScale = 4;
-  int _nextCollidingGroupId = 1;
-  int _nextNonCollidingGroupId = -1;
-  int _nextCategory = 0x0001;
+  static const double _maxVelocity = 25;
+  static const double _maxAngularVelocity = 0.4;
+  static int _nextCollidingGroupId = 1;
+  static int _nextNonCollidingGroupId = -1;
+  static int _nextCategory = 0x0001;
   Body? original;
 
   int id = ID.instance.nextID;
@@ -118,7 +113,7 @@ class Body extends MatterObject {
   }
 
   /// Returns the next unique group index for which bodies will collide.
-  int nextGroup([bool isNonColliding = false]) {
+  static int nextGroup([bool isNonColliding = false]) {
     if (isNonColliding) {
       return _nextNonCollidingGroupId--;
     }
@@ -126,7 +121,7 @@ class Body extends MatterObject {
   }
 
   /// Returns the next unique category bitfield (starting after the initial default category `0x0001`).
-  int nextCategory() {
+  static int nextCategory() {
     _nextCategory = _nextCategory << 1;
     return _nextCategory;
   }
@@ -177,13 +172,15 @@ class Body extends MatterObject {
 
   /// Sets the mass of the body. Inverse mass, density and inertia are automatically updated to reflect the change.
   void setMass(double newMass) {
-    double moment = inertia / (newMass / 6);
-    inertia = moment * (newMass / 6);
-    inverseInertia = 1 / inertia;
+    if (mass > 0 && newMass > 0 && newMass.isFinite && mass.isFinite) {
+      double moment = inertia / (mass / 6);
+      inertia = moment * (newMass / 6);
+    }
+    inverseInertia = inertia > 0 ? 1 / inertia : 0;
 
     mass = newMass;
-    inverseMass = 1 / mass;
-    density = mass / area;
+    inverseMass = mass > 0 ? 1 / mass : 0;
+    density = area > 0 ? mass / area : density;
   }
 
   /// Sets the density of the body. Mass and inertia are automatically updated to reflect the change.
@@ -195,11 +192,12 @@ class Body extends MatterObject {
   /// Sets the moment of inertia (i.e. second moment of area) of the body
   void setInertia(double newInertia) {
     inertia = newInertia;
-    inverseInertia = 1 / inertia;
+    inverseInertia = (inertia > 0 && inertia.isFinite) ? 1 / inertia : 0;
   }
 
   /// Sets the body's vertices and updates body properties accordingly, including inertia, area and mass (with respect to `body.density`).
   void setVertices(List<Vertex> newVertices) {
+    if (newVertices.isEmpty) return;
     // Change vertices.
     if (newVertices[0].body == this) {
       vertices = newVertices;
@@ -319,7 +317,9 @@ class Body extends MatterObject {
       part.bounds!.update(part.vertices, velocity);
 
       if (index > 0) {
-        part.position.rotateAbout(delta, position);
+        final rotated = part.position.rotateAbout(delta, position);
+        part.position.x = rotated.x;
+        part.position.y = rotated.y;
       }
     }
   }
@@ -419,13 +419,19 @@ class Body extends MatterObject {
   void update(double deltaTime, double timescale, double correction) {
     double deltaTimeSquared = math.pow(deltaTime * timescale * this.timescale, 2).toDouble();
 
-    double frictionAir = this.frictionAir * timescale * this.timescale;
+    double frictionAir = 1 - this.frictionAir * timescale * this.timescale;
     double velocityPrevX = position.x - positionPrev!.x;
     double velocityPrevY = position.y - positionPrev!.y;
 
     // Update velocity with Verlet integration.
     velocity.x = (velocityPrevX * frictionAir * correction) + (force.x / mass) * deltaTimeSquared;
     velocity.y = (velocityPrevY * frictionAir * correction) + (force.y / mass) * deltaTimeSquared;
+
+    // Cap velocity to mitigate tunneling at high speed (no CCD).
+    if (velocity.x > _maxVelocity) velocity.x = _maxVelocity;
+    if (velocity.x < -_maxVelocity) velocity.x = -_maxVelocity;
+    if (velocity.y > _maxVelocity) velocity.y = _maxVelocity;
+    if (velocity.y < -_maxVelocity) velocity.y = -_maxVelocity;
 
     positionPrev!.x = position.x;
     positionPrev!.y = position.y;
@@ -434,6 +440,10 @@ class Body extends MatterObject {
 
     // Update angular velocity with Verlet integration.
     angularVelocity = ((angle - anglePrev) * frictionAir * correction) + (torque / inertia) * deltaTimeSquared;
+
+    if (angularVelocity > _maxAngularVelocity) angularVelocity = _maxAngularVelocity;
+    if (angularVelocity < -_maxAngularVelocity) angularVelocity = -_maxAngularVelocity;
+
     anglePrev = angle;
     angle += angularVelocity;
 
@@ -447,8 +457,8 @@ class Body extends MatterObject {
       part.vertices = Vertices.translate(part.vertices, velocity);
 
       if (index > 0) {
-        position.x += velocity.x;
-        position.y += velocity.y;
+        part.position.x += velocity.x;
+        part.position.y += velocity.y;
       }
 
       if (angularVelocity != 0) {
@@ -456,7 +466,9 @@ class Body extends MatterObject {
         Axes.rotate(part.axes, angularVelocity);
 
         if (index > 0) {
-          part.position.rotateAbout(angularVelocity, position);
+          final rotated = part.position.rotateAbout(angularVelocity, position);
+          part.position.x = rotated.x;
+          part.position.y = rotated.y;
         }
       }
 
@@ -467,8 +479,8 @@ class Body extends MatterObject {
 
   /// Applies a force to a body from a given world-space position, including resulting torque.
   void applyForce(Vector position, Vector force) {
-    this.force.x = force.x;
-    this.force.y = force.y;
+    this.force.x += force.x;
+    this.force.y += force.y;
     Vector offset = Vector(position.x - this.position.x, position.y - this.position.y);
     this.torque += offset.x * force.y - offset.y * force.x;
   }

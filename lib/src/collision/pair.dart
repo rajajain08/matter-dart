@@ -18,7 +18,7 @@ class Pair {
   double timeUpdated;
   double inverseMass;
   double friction;
-  final double frictionStatic;
+  double frictionStatic;
   double restitution;
   double slop;
   double separation;
@@ -46,10 +46,10 @@ class Pair {
 
   void setActive(bool isActive, double timeStamp) {
     if (isActive) {
-      isActive = true;
+      this.isActive = true;
       timeUpdated = timeStamp;
     } else {
-      isActive = false;
+      this.isActive = false;
       activeContacts.length = 0;
     }
   }
@@ -57,7 +57,8 @@ class Pair {
   void update(Collision updatedCollision, double timestamp) {
     collision = updatedCollision;
     inverseMass = parentA.inverseMass + parentB.inverseMass;
-    friction = math.max(parentA.frictionStatic, parentB.frictionStatic);
+    friction = math.min(parentA.friction, parentB.friction);
+    frictionStatic = math.max(parentA.frictionStatic, parentB.frictionStatic);
     restitution = math.max(parentA.restitution, parentB.restitution);
     slop = math.max(parentA.slop, parentB.slop);
     activeContacts.length = 0;

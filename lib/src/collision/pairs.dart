@@ -34,7 +34,7 @@ class Pairs {
     Pair? pair;
     collisionStart.clear();
     collisionEnd.clear();
-    collisionEnd.clear();
+    collisionActive.clear();
 
     for (int i = 0; i < list.length; i++) {
       list[i].confirmedActive = false;
@@ -44,7 +44,7 @@ class Pairs {
       collision = collisions[i];
 
       if (collision.collided) {
-        pairId = Pair(collision, timeStamp).id;
+        pairId = Pair.getPairId(collision.bodyA, collision.bodyB);
 
         pair = table[pairId];
 
@@ -64,6 +64,8 @@ class Pairs {
         } else {
           // pair did not exist, create a new pair
           pair = Pair(collision, timeStamp);
+          pair.update(collision, timeStamp);
+          pair.confirmedActive = true;
           table[pairId] = pair;
 
           // push the new pair
@@ -72,11 +74,19 @@ class Pairs {
         }
       }
     }
+
+    // Find pairs that ended (no longer active this update).
+    for (int i = 0; i < list.length; i++) {
+      pair = list[i];
+      if (!pair.confirmedActive) {
+        pair.setActive(false, timeStamp);
+        collisionEnd.add(pair);
+      }
+    }
   }
 
   void removeOld(double timeStamp) {
     Collision collision;
-    String pairId;
     Pair? pair;
     List<int> indexesToRemove = [];
     int pairIndex;
@@ -91,7 +101,7 @@ class Pairs {
       }
 
       // if pair is inactive for too long, mark it to be removed
-      if (pair.timeUpdated > pairMaxIdleLife) {
+      if (timeStamp - pair.timeUpdated > pairMaxIdleLife) {
         indexesToRemove.add(i);
       }
     }

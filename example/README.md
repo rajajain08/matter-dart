@@ -1,16 +1,17 @@
-# example
+# matter_dart example
 
-A new Flutter project.
+Interactive Flutter demos for the `matter_dart` package.
 
-## Getting Started
+Run the example app from this directory:
 
-This project is a starting point for a Flutter application.
+```sh
+flutter run
+```
 
-A few resources to get you started if this is your first Flutter project:
+The app includes several physics scenes that exercise the package API, including plinko, ball pit, Newton's cradle, chains, mixed shapes, restitution, and stress demos.
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+For web:
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```sh
+flutter run -d chrome
+```

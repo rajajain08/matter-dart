@@ -32,8 +32,10 @@ abstract class Axes {
     final sin = math.sin(angle);
 
     for (var i = 0; i < axes.length; i++) {
-      axes[i].x = cos * axes[i].x - sin * axes[i].y;
-      axes[i].y = sin * axes[i].x + cos * axes[i].y;
+      final x = axes[i].x;
+      final y = axes[i].y;
+      axes[i].x = cos * x - sin * y;
+      axes[i].y = sin * x + cos * y;
     }
   }
 }

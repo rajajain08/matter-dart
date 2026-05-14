@@ -199,7 +199,8 @@ class Vertices {
     var centre = mean(vertices);
 
     vertices.sort((vertexA, vertexB) {
-      return (Vector.angle(centre, vertexA) - Vector.angle(centre, vertexB)).toInt();
+      final d = Vector.angle(centre, vertexA) - Vector.angle(centre, vertexB);
+      return d < 0 ? -1 : (d > 0 ? 1 : 0);
     });
 
     return vertices;
@@ -246,8 +247,9 @@ class Vertices {
     // sort vertices on x-axis (y-axis for ties)
     vertices = vertices.sublist(0);
     vertices.sort((vertexA, vertexB) {
-      var dx = vertexA.x - vertexB.x;
-      return (dx != 0 ? dx : vertexA.y - vertexB.y).toInt();
+      final dx = vertexA.x - vertexB.x;
+      final d = dx != 0 ? dx : vertexA.y - vertexB.y;
+      return d < 0 ? -1 : (d > 0 ? 1 : 0);
     });
 
     // build lower hull

@@ -1,0 +1,21 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - example/**/generated_plugin_registrant.dart
+  errors:
+    strict_top_level_inference: ignore
+
+linter:
+  rules:
+    avoid_function_literals_in_foreach_calls: false
+    file_names: false
+    no_leading_underscores_for_local_identifiers: false
+    prefer_conditional_assignment: false
+    prefer_final_fields: false
+    prefer_interpolation_to_compose_strings: false
+    prefer_is_empty: false
+    prefer_spread_collections: false
+    prefer_typing_uninitialized_variables: false
+    unnecessary_library_name: false
+    unnecessary_this: false

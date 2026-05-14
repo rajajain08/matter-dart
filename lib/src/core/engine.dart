@@ -7,10 +7,11 @@ import 'package:matter_dart/src/collision/grid.dart';
 import 'package:matter_dart/src/collision/pairs.dart';
 import 'package:matter_dart/src/collision/resolver.dart';
 import 'package:matter_dart/src/constraint/constraint.dart';
+import 'package:matter_dart/src/core/events.dart';
 import 'package:matter_dart/src/core/sleeping.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
 
-class Engine {
+class Engine with Eventful {
   // Specifies the number of position iterations to perform each update.
   double positionIterations = 6;
 
@@ -59,7 +60,7 @@ class Engine {
     engine.gravity = EngineGravityOptions(x: 0, y: 1, scale: 0.001);
     _merge(engine, options);
     engine.world = engine.world ?? Composite.create(CompositeOptions(label: 'World'));
-    engine.grid = options.grid ?? options.broadphase;
+    engine.grid = options.grid ?? options.broadphase ?? Grid();
     engine.pairs = Pairs.create();
 
     // temporary back compatibility
@@ -67,20 +68,18 @@ class Engine {
     return engine;
   }
   void update(double? delta, double? correction) {
-    DateTime startDateTime = DateTime.now();
     delta = delta ?? 1000 / 60;
     correction = correction ?? 1;
     List<GridPair> gridPairs;
     int i;
-    timing.timestamp = delta * timing.timeScale;
+    timing.timestamp += delta * timing.timeScale;
     timing.lastDelta = delta * timing.timeScale;
 
-    //TODO create event and triggger
-    //
-    //
+    trigger('beforeUpdate', {'timestamp': timing.timestamp});
+
     List<Body> allBodies = this.world?.allBodies() ?? [];
     List<Constraint>? allConstraints = this.world?.allConstraints();
-    if (this.enableSleeping && allBodies != null) {
+    if (this.enableSleeping) {
       Sleeping.update(allBodies, timing.timeScale);
     }
     // applies gravity to all bodies
@@ -88,9 +87,6 @@ class Engine {
 
     // update all body position and rotation by integration
     _bodiesUpdate(allBodies, delta, timing.timeScale, correction);
-
-    // update all constraints (first pass)
-    Constraint.preSolveAll(allBodies);
 
     if (world?.isModified ?? false) {
       grid?.clear();
@@ -109,7 +105,8 @@ class Engine {
     List<Collision> collisions = Detector.collisions(gridPairs, this);
 
     // update collision pairs
-    Pairs pairs = this.pairs ?? Pairs.create();
+    this.pairs ??= Pairs.create();
+    Pairs pairs = this.pairs!;
     double timestamp = timing.timestamp;
     pairs.update(collisions, timestamp);
     pairs.removeOld(timestamp);
@@ -117,9 +114,9 @@ class Engine {
     // wake up bodies involved in collisions
     if (enableSleeping) Sleeping.afterCollisions(pairs.list, timing.timeScale);
 
-    //TODO
-    // trigger collision events
-    // if (pairs.collisionStart.length > 0) Events.trigger(engine, 'collisionStart', {pairs: pairs.collisionStart});
+    if (pairs.collisionStart.isNotEmpty) {
+      trigger('collisionStart', {'pairs': pairs.collisionStart});
+    }
 
     // iteratively resolve position between collisions
     Resolver.preSolvePosition(pairs.list);
@@ -128,7 +125,7 @@ class Engine {
     }
     Resolver.postSolvePosition(allBodies);
 
-    // update all constraints (second pass)
+    // solve constraints
     Constraint.preSolveAll(allBodies);
     for (i = 0; i < constraintIterations; i++) {
       Constraint.solveAll(allConstraints ?? [], timing.timeScale);
@@ -141,14 +138,15 @@ class Engine {
       Resolver.solveVelocity(pairs.list, timing.timeScale);
     }
 
-    // trigger collision events TODO
-    // if (pairs.collisionActive.length > 0) Events.trigger(engine, 'collisionActive', {pairs: pairs.collisionActive});
-
-    // if (pairs.collisionEnd.length > 0) Events.trigger(engine, 'collisionEnd', {pairs: pairs.collisionEnd});
+    if (pairs.collisionActive.isNotEmpty) {
+      trigger('collisionActive', {'pairs': pairs.collisionActive});
+    }
+    if (pairs.collisionEnd.isNotEmpty) {
+      trigger('collisionEnd', {'pairs': pairs.collisionEnd});
+    }
 
     _bodiesClearForces(allBodies);
-    // TODO
-    //  Events.trigger(engine, 'afterUpdate', event);
+    trigger('afterUpdate', {'timestamp': timing.timestamp});
 
     // log the time elapsed computing this update TODO
     // timing.lastElapsed = Common.now() - startTime;
@@ -203,7 +201,7 @@ class Engine {
     engine.events = options.events ?? engine.events;
     engine.gravity = options.gravity ?? engine.gravity;
     engine.grid = options.grid ?? engine.grid;
-    engine.broadphase = options.broadphase;
+    engine.broadphase = options.broadphase ?? engine.broadphase;
     engine.pairs = options.pairs ?? engine.pairs;
     engine.positionIterations = options.positionIterations ?? engine.positionIterations;
     engine.timing = options.timing ?? engine.timing;

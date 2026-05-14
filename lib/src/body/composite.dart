@@ -223,24 +223,24 @@ class Composite extends MatterObject {
 
   /// Returns all constraints in the given composite, including all constraints in its children, recursively.
   List<Constraint> allConstraints() {
-    List<Constraint> allConstraints = [];
+    List<Constraint> _allConstraints = []..addAll(this.constraints);
 
     for (int index = 0; index < this.composites.length; index++) {
-      allConstraints.addAll(this.composites[index].allConstraints());
+      _allConstraints.addAll(this.composites[index].allConstraints());
     }
 
-    return allConstraints;
+    return _allConstraints;
   }
 
   /// Returns all composites in the given composite, including all composites in its children, recursively.
   List<Composite> allComposites() {
-    List<Composite> allComposites = [];
+    List<Composite> _allComposites = []..addAll(this.composites);
 
     for (int index = 0; index < this.composites.length; index++) {
-      allComposites.addAll(this.composites[index].allComposites());
+      _allComposites.addAll(this.composites[index].allComposites());
     }
 
-    return allComposites;
+    return _allComposites;
   }
 
   /// Searches the composite recursively for an object matching the type and id supplied, null if not found.
@@ -338,7 +338,7 @@ class Composite extends MatterObject {
       double dy = body.position.y - point.y;
 
       body.setPosition(Vector(point.x + dx * scaleX, point.y + dy * scaleY));
-      body.scale(scaleX, scaleY);
+      body.scale(scaleX, scaleY, point);
     }
 
     setModified(true, true, false);

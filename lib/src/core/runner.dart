@@ -35,7 +35,13 @@ class Runner {
 
   /// Calculates time delta and correction factor from current time.
   void _tick(Duration currentTime) {
-    final diff = _previousTime == Duration.zero ? Duration.zero : currentTime - _previousTime;
+    // First frame: seed previous time and skip the callback so we don't emit a
+    // zero-delta tick that would zero out body velocities via Verlet integration.
+    if (_previousTime == Duration.zero) {
+      _previousTime = currentTime;
+      return;
+    }
+    final diff = currentTime - _previousTime;
     _previousTime = currentTime;
 
     // New delta time in seconds.
@@ -44,7 +50,7 @@ class Runner {
     // TODO: filter delta over a few frames, to improve stability
 
     // Calculate time correction.
-    _correction = deltaTime / _prevDeltaTime;
+    _correction = _prevDeltaTime == 0 ? 1.0 : deltaTime / _prevDeltaTime;
     _prevDeltaTime = deltaTime;
 
     // Apply time correction for time scaling.

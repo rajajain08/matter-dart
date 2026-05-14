@@ -37,7 +37,6 @@ class Query {
   static List<Collision> ray(List<Body> bodies, Vector startPoint, Vector endPoint, [double? rayWidth]) {
     rayWidth = rayWidth ?? double.maxFinite;
 
-    double rayAngle = Vector.angle(startPoint, endPoint);
     double rayLength = Vector.sub(startPoint, endPoint).magnitude();
     double rayX = (endPoint.x + startPoint.x) * 0.5;
     double rayY = (endPoint.y + startPoint.y) * 0.5;

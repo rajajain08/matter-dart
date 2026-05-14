@@ -1,12 +1,12 @@
 {
-    "name": "example",
-    "short_name": "example",
+    "name": "Matter Dart demos",
+    "short_name": "Matter Dart",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#0B0C14",
+    "theme_color": "#0B0C14",
+    "description": "Interactive 2D rigid-body physics for Flutter Web.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

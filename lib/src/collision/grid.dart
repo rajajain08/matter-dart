@@ -1,10 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:matter_dart/matter_dart.dart';
-import 'package:matter_dart/src/body/body.dart';
-import 'package:matter_dart/src/body/composite.dart';
-import 'package:matter_dart/src/body/support/models.dart';
-import 'package:matter_dart/src/core/engine.dart';
 
 /// Contains methods for creating and manipulating collision broadphase grid structures.
 class Grid {
@@ -32,6 +28,13 @@ class Grid {
     for (int index = 0; index < bodies.length; index++) {
       Body body = bodies[index];
       if (body.isSleeping && !forceUpdate) continue;
+      if (body.bounds == null) continue;
+      if (!body.bounds!.min.dx.isFinite ||
+          !body.bounds!.min.dy.isFinite ||
+          !body.bounds!.max.dx.isFinite ||
+          !body.bounds!.max.dy.isFinite) {
+        continue;
+      }
 
       Region newRegion = _getRegion(body);
 
