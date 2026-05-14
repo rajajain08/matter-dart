@@ -1,16 +1,6 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
@@ -19,86 +9,122 @@
   <meta name="theme-color" content="#0B0C14">
   <meta name="description" content="Interactive 2D rigid-body physics demos — matter_dart / Matter.js port for Flutter Web.">
 
-  <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Matter Dart">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <title>Matter Dart — physics demos</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap" rel="stylesheet">
 
   <link rel="manifest" href="manifest.json">
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #0B0C14;
+      color: #E5E7EB;
+      font-family: 'DM Sans', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+    }
+    #loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      background: #0B0C14;
+      z-index: 9999;
+      transition: opacity 280ms ease-out;
+    }
+    #loading.fade {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #loading .spinner {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 3px solid #1F2937;
+      border-top-color: #60A5FA;
+      animation: matter-spin 800ms linear infinite;
+    }
+    #loading .brand {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #E5E7EB;
+    }
+    #loading .label {
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      color: #6B7280;
+      text-transform: uppercase;
+    }
+    @keyframes matter-spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-  <!-- This script installs service_worker.js to provide PWA functionality to
-       application. For more information, see:
-       https://developers.google.com/web/fundamentals/primers/service-workers -->
+  <div id="loading" role="status" aria-label="Loading Matter Dart">
+    <div class="spinner"></div>
+    <div class="brand">Matter Dart</div>
+    <div class="label">Loading physics engine…</div>
+  </div>
+
+  <script src="flutter.js" defer></script>
   <script>
-    var serviceWorkerVersion = null;
-    var scriptLoaded = false;
-    function loadMainDartJs() {
-      if (scriptLoaded) {
-        return;
+    (function () {
+      var serviceWorkerVersion = "{{flutter_service_worker_version}}";
+
+      function hideLoading() {
+        var el = document.getElementById('loading');
+        if (!el || el.classList.contains('fade')) return;
+        el.classList.add('fade');
+        setTimeout(function () { el.remove(); }, 320);
       }
-      scriptLoaded = true;
-      var scriptTag = document.createElement('script');
-      scriptTag.src = 'main.dart.js';
-      scriptTag.type = 'application/javascript';
-      document.body.append(scriptTag);
-    }
 
-    if ('serviceWorker' in navigator) {
-      // Service workers are supported. Use them.
-      window.addEventListener('load', function () {
-        // Wait for registration to finish before dropping the <script> tag.
-        // Otherwise, the browser will load the script multiple times,
-        // potentially different versions.
-        var serviceWorkerUrl = 'flutter_service_worker.js?v=' + serviceWorkerVersion;
-        navigator.serviceWorker.register(serviceWorkerUrl)
-          .then((reg) => {
-            function waitForActivation(serviceWorker) {
-              serviceWorker.addEventListener('statechange', () => {
-                if (serviceWorker.state == 'activated') {
-                  console.log('Installed new service worker.');
-                  loadMainDartJs();
-                }
-              });
-            }
-            if (!reg.active && (reg.installing || reg.waiting)) {
-              // No active web worker and we have installed or are installing
-              // one for the first time. Simply wait for it to activate.
-              waitForActivation(reg.installing ?? reg.waiting);
-            } else if (!reg.active.scriptURL.endsWith(serviceWorkerVersion)) {
-              // When the app updates the serviceWorkerVersion changes, so we
-              // need to ask the service worker to update.
-              console.log('New service worker available.');
-              reg.update();
-              waitForActivation(reg.installing);
-            } else {
-              // Existing service worker is still good.
-              console.log('Loading app from service worker.');
-              loadMainDartJs();
-            }
-          });
-
-        // If service worker doesn't succeed in a reasonable amount of time,
-        // fallback to plaint <script> tag.
-        setTimeout(() => {
-          if (!scriptLoaded) {
-            console.warn(
-              'Failed to load app from service worker. Falling back to plain <script> tag.',
-            );
-            loadMainDartJs();
-          }
-        }, 4000);
+      var observer = new MutationObserver(function () {
+        if (
+          document.querySelector('flt-glass-pane') ||
+          document.querySelector('flutter-view') ||
+          document.querySelector('flt-scene-host')
+        ) {
+          hideLoading();
+          observer.disconnect();
+        }
       });
-    } else {
-      // Service workers not supported. Just drop the <script> tag.
-      loadMainDartJs();
-    }
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      setTimeout(hideLoading, 15000);
+
+      window.addEventListener('load', function () {
+        if (!window._flutter || !_flutter.loader) {
+          var s = document.createElement('script');
+          s.src = 'main.dart.js';
+          s.type = 'application/javascript';
+          document.body.append(s);
+          return;
+        }
+        _flutter.loader.load({
+          serviceWorker: {
+            serviceWorkerVersion: serviceWorkerVersion,
+          },
+          onEntrypointLoaded: function (engineInitializer) {
+            engineInitializer.initializeEngine().then(function (appRunner) {
+              return appRunner.runApp();
+            });
+          },
+        });
+      });
+    })();
   </script>
 </body>
 </html>
