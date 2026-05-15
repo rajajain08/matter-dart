@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:matter_dart/matter_dart.dart';
 
 /// Live physics scene behind the home grid.
@@ -63,6 +62,7 @@ class _HomePhysicsBackgroundState extends State<HomePhysicsBackground>
     with TickerProviderStateMixin {
   final Runner _runner = Runner();
   final math.Random _rng = math.Random(11);
+  final ValueNotifier<int> _tick = ValueNotifier<int>(0);
   Engine? _engine;
   Composite? _world;
   Size? _lastSize;
@@ -87,7 +87,7 @@ class _HomePhysicsBackgroundState extends State<HomePhysicsBackground>
         if (!correction.isFinite) return;
         _engine?.update(dt * 1000, correction);
         _autoBehaviors();
-        if (mounted) setState(() {});
+        if (mounted) _tick.value++;
       },
       engineTiming: EngineTimingOptions(timeScale: 1.0),
     );
@@ -97,6 +97,7 @@ class _HomePhysicsBackgroundState extends State<HomePhysicsBackground>
   void dispose() {
     widget.controller?._detach(this);
     _runner.stop();
+    _tick.dispose();
     super.dispose();
   }
 
@@ -214,49 +215,25 @@ class _HomePhysicsBackgroundState extends State<HomePhysicsBackground>
     b.applyForce(b.position, Vector((_rng.nextDouble() - 0.5) * 0.12, -0.12));
   }
 
-  Body? _bodyAtScreen(Offset local) {
-    final world = _world;
-    if (world == null) return null;
-    final p = Vector(local.dx, local.dy);
-    for (final b in world.allBodies()) {
-      if (b.isStatic) continue;
-      if (b.vertices.isEmpty) continue;
-      if (b.bounds != null && !b.bounds!.contains(p)) continue;
-      if (Vertices.contains(b.vertices, p)) return b;
-    }
-    return null;
-  }
-
-  void _kickBody(Body b) {
-    b.applyForce(
-      b.position,
-      Vector((_rng.nextDouble() - 0.5) * 0.08, -0.18),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (ctx, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
         _rebuildWorld(size);
-        final bodies = _engine?.world?.allBodies() ?? const <Body>[];
-        return _BodyHitArea(
-          hitTester: (offset) => _bodyAtScreen(offset) != null,
-          cardRects: widget.cardRects,
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTapDown: (d) {
-              final body = _bodyAtScreen(d.localPosition);
-              if (body != null) _kickBody(body);
+        return IgnorePointer(
+          child: ValueListenableBuilder<int>(
+            valueListenable: _tick,
+            builder: (_, __, ___) {
+              final bodies = _engine?.world?.allBodies() ?? const <Body>[];
+              return WorldPaint(
+                bodies: bodies,
+                worldWidth: size.width,
+                worldHeight: size.height,
+                strokeWidth: 1,
+                size: size,
+              );
             },
-            child: WorldPaint(
-              bodies: bodies,
-              worldWidth: size.width,
-              worldHeight: size.height,
-              strokeWidth: 1,
-              size: size,
-            ),
           ),
         );
       },
@@ -264,52 +241,3 @@ class _HomePhysicsBackgroundState extends State<HomePhysicsBackground>
   }
 }
 
-/// `RenderProxyBox` whose `hitTestSelf` defers to a body-presence test. When
-/// the pointer is over a body the layer consumes the hit; otherwise events
-/// fall through to siblings below (cards, scroll view, FAB).
-class _BodyHitArea extends SingleChildRenderObjectWidget {
-  final bool Function(Offset) hitTester;
-  final CardRectRegistry? cardRects;
-  const _BodyHitArea({
-    required this.hitTester,
-    required this.cardRects,
-    required Widget child,
-  }) : super(child: child);
-
-  @override
-  RenderObject createRenderObject(BuildContext context) =>
-      _BodyHitAreaRender(hitTester, cardRects);
-
-  @override
-  void updateRenderObject(BuildContext context, _BodyHitAreaRender renderObject) {
-    renderObject.hitTester = hitTester;
-    renderObject.cardRects = cardRects;
-  }
-}
-
-class _BodyHitAreaRender extends RenderProxyBox {
-  _BodyHitAreaRender(this.hitTester, this.cardRects);
-  bool Function(Offset) hitTester;
-  CardRectRegistry? cardRects;
-
-  /// Skip the entire subtree (including any inner GestureDetectors) when the
-  /// pointer is not over a physics body — events fall through to widgets
-  /// beneath this layer in the parent `Stack`. Also skip when the pointer is
-  /// over a registered card rect so cards always win.
-  @override
-  bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    if (cardRects != null && cardRects!.contains(localToGlobal(position))) {
-      return false;
-    }
-    if (!hitTester(position)) return false;
-    return super.hitTest(result, position: position);
-  }
-
-  @override
-  bool hitTestSelf(Offset position) {
-    if (cardRects != null && cardRects!.contains(localToGlobal(position))) {
-      return false;
-    }
-    return hitTester(position);
-  }
-}

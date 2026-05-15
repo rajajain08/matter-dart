@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -119,8 +120,16 @@ class _WebDemoHomePageState extends State<WebDemoHomePage> {
               type: MaterialType.transparency,
               child: ScrollConfiguration(
                 behavior: ScrollConfiguration.of(context).copyWith(
-                  scrollbars: true,
-                  physics: const AlwaysScrollableScrollPhysics(),
+                  scrollbars: w >= 700,
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  dragDevices: {
+                    PointerDeviceKind.touch,
+                    PointerDeviceKind.mouse,
+                    PointerDeviceKind.trackpad,
+                    PointerDeviceKind.stylus,
+                  },
                 ),
                 child: CustomScrollView(
                   controller: _scroll,
@@ -266,7 +275,7 @@ class _WebDemoHomePageState extends State<WebDemoHomePage> {
             child: HomePhysicsBackground(
               controller: _physics,
               cardRects: _cardRects,
-              maxBodies: 18,
+              maxBodies: w < 600 ? 8 : 18,
             ),
           ),
         ],
