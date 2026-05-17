@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../demos/demo_registry.dart';
+import '../games/suika/suika_page.dart';
 import 'project_about.dart';
 import 'demo_preview_card.dart';
 import 'home_physics_background.dart';
@@ -167,6 +168,26 @@ class _WebDemoHomePageState extends State<WebDemoHomePage> {
                             onTryDemos: _scrollToDemos,
                             onGitHub: () => _openRepo(context),
                             onDropShapes: () => _physics.spawnBurst(count: 5),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1280),
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            _horizontalPad(w),
+                            8,
+                            _horizontalPad(w),
+                            8,
+                          ),
+                          child: _WebSuikaCta(
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const SuikaPage()),
+                            ),
                           ),
                         ),
                       ),
@@ -753,6 +774,66 @@ class _WebFooter extends StatelessWidget {
           child: const Text('Open repository on GitHub'),
         ),
       ],
+    );
+  }
+}
+
+class _WebSuikaCta extends StatelessWidget {
+  final VoidCallback onTap;
+  const _WebSuikaCta({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFF472B6), Color(0xFFFB7185)],
+            ),
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFF472B6).withValues(alpha: 0.35),
+                blurRadius: 36,
+                spreadRadius: -10,
+                offset: const Offset(0, 14),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48, height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.22),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(Icons.bubble_chart_rounded, color: Colors.white, size: 26),
+              ),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Play Suika — built on matter_dart',
+                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                    SizedBox(height: 3),
+                    Text('Drop fruits, merge same tiers, chase the melon.',
+                      style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right_rounded, color: Colors.white),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

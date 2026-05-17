@@ -21,6 +21,7 @@ class Demo {
   final double? constraintIterations;
   final double? positionIterations;
   final double? velocityIterations;
+  final bool enableSleeping;
   final IconData icon;
   final Color accent;
 
@@ -34,5 +35,6 @@ class Demo {
     this.constraintIterations,
     this.positionIterations,
     this.velocityIterations,
+    this.enableSleeping = false,
   });
 }

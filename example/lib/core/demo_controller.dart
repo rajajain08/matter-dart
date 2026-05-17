@@ -72,6 +72,7 @@ class DemoController {
       constraintIterations: demo.constraintIterations,
       positionIterations: demo.positionIterations,
       velocityIterations: demo.velocityIterations,
+      enableSleeping: demo.enableSleeping,
     ));
   }
 

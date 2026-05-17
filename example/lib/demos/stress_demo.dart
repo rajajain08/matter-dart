@@ -12,6 +12,10 @@ final Demo stressDemo = Demo(
   icon: Icons.bolt_rounded,
   accent: const Color(0xFF10B981),
   build: _build,
+  positionIterations: 10,
+  velocityIterations: 8,
+  constraintIterations: 4,
+  enableSleeping: true,
 );
 
 void _build(Composite world, math.Random rng) {
@@ -21,7 +25,12 @@ void _build(Composite world, math.Random rng) {
     final double size = 14.0 + rng.nextDouble() * 14;
     final double x = WorldDimensions.innerLeft + rng.nextDouble() * WorldDimensions.innerWidth;
     final double y = WorldDimensions.innerTop + rng.nextDouble() * (WorldDimensions.innerHeight - WorldDimensions.wallThickness);
-    final Body b = Bodies.rectangle(x, y, size, size, BodyOptions(frictionAir: 0.02));
+    final Body b = Bodies.rectangle(x, y, size, size, BodyOptions(
+      frictionAir: 0.001,
+      friction: 0.05,
+      restitution: 0.1,
+      slop: 0.01,
+    ));
     b.setAngularVelocity((rng.nextDouble() - 0.5) * 1.0);
     bodies.add(b);
   }
