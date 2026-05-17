@@ -784,56 +784,66 @@ class _WebSuikaCta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFF472B6), Color(0xFFFB7185)],
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final narrow = constraints.maxWidth < 400;
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
             borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFF472B6).withValues(alpha: 0.35),
-                blurRadius: 36,
-                spreadRadius: -10,
-                offset: const Offset(0, 14),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 48, height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.22),
-                  borderRadius: BorderRadius.circular(14),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFF472B6), Color(0xFFFB7185)],
                 ),
-                child: const Icon(Icons.bubble_chart_rounded, color: Colors.white, size: 26),
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFF472B6).withValues(alpha: 0.35),
+                    blurRadius: 36,
+                    spreadRadius: -10,
+                    offset: const Offset(0, 14),
+                  ),
+                ],
               ),
-              const SizedBox(width: 16),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('Play Suika — built on matter_dart',
-                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
-                    SizedBox(height: 3),
-                    Text('Drop fruits, merge same tiers, chase the melon.',
-                      style: TextStyle(color: Colors.white70, fontSize: 13)),
-                  ],
-                ),
+              child: Row(
+                children: [
+                  Container(
+                    width: narrow ? 38 : 48,
+                    height: narrow ? 38 : 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.22),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(Icons.bubble_chart_rounded, color: Colors.white, size: narrow ? 20 : 26),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Play Suika — built on matter_dart',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: narrow ? 14 : 18,
+                            fontWeight: FontWeight.w700,
+                          )),
+                        const SizedBox(height: 3),
+                        Text('Drop fruits, merge same tiers, chase the melon.',
+                          style: TextStyle(color: Colors.white70, fontSize: narrow ? 11 : 13)),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right_rounded, color: Colors.white),
+                ],
               ),
-              const Icon(Icons.chevron_right_rounded, color: Colors.white),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:matter_dart/matter_dart.dart';
 
@@ -22,7 +21,9 @@ class _DemoPageState extends State<DemoPage> {
   @override
   void initState() {
     super.initState();
-    final layout = kIsWeb ? WorldLayout.web : WorldLayout.mobile;
+    final view = WidgetsBinding.instance.platformDispatcher.views.first;
+    final screenWidth = view.physicalSize.width / view.devicePixelRatio;
+    final layout = WorldLayout.forScreenWidth(screenWidth);
     _controller = DemoController(
       demo: widget.demo,
       onTick: _onTick,
@@ -286,7 +287,7 @@ class _Hint extends StatelessWidget {
         Icon(Icons.touch_app_rounded, size: 14, color: Colors.white.withValues(alpha: 0.4)),
         const SizedBox(width: 6),
         Text(
-          kIsWeb ? 'click & drag to interact' : 'drag to interact',
+          'drag to interact',
           style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 12),
         ),
       ],

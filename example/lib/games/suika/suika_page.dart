@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:matter_dart/matter_dart.dart';
 
@@ -44,7 +43,9 @@ class _SuikaPageState extends State<SuikaPage>
       vsync: this,
       duration: const Duration(milliseconds: 400),
     );
-    final layout = kIsWeb ? WorldLayout.web : WorldLayout.mobile;
+    final view = WidgetsBinding.instance.platformDispatcher.views.first;
+    final screenWidth = view.physicalSize.width / view.devicePixelRatio;
+    final layout = WorldLayout.forScreenWidth(screenWidth);
     _controller = SuikaController(onTick: _onTick, worldLayout: layout);
     _controller.start();
   }
@@ -146,67 +147,73 @@ class _TopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 6, 8, 4),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-            onPressed: onBack,
-            color: Colors.white70,
-          ),
-          // title
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final narrow = constraints.maxWidth < 400;
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(4, 6, 8, 4),
+          child: Row(
             children: [
-              ShaderMask(
-                shaderCallback: (r) => const LinearGradient(
-                  colors: [_kAccent, _kAccent2],
-                ).createShader(r),
-                child: const Text('Suika',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                  )),
+              IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                onPressed: onBack,
+                color: Colors.white70,
               ),
-              Text('merge fruits',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.35),
-                  fontSize: 10,
-                  letterSpacing: 0.5,
-                )),
+              // title — hide subtitle on very narrow screens to save space
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ShaderMask(
+                    shaderCallback: (r) => const LinearGradient(
+                      colors: [_kAccent, _kAccent2],
+                    ).createShader(r),
+                    child: Text('Suika',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: narrow ? 17 : 20,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                      )),
+                  ),
+                  if (!narrow)
+                    Text('merge fruits',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.35),
+                        fontSize: 10,
+                        letterSpacing: 0.5,
+                      )),
+                ],
+              ),
+              const Spacer(),
+              // CURRENT fruit
+              _FruitPreviewCard(label: 'NOW', tierIndex: nextTier, compact: narrow),
+              const SizedBox(width: 6),
+              // NEXT fruit
+              _FruitPreviewCard(label: 'NEXT', tierIndex: previewTier, dim: true, compact: narrow),
+              const SizedBox(width: 8),
+              // Score
+              AnimatedBuilder(
+                animation: scoreAnim,
+                builder: (_, __) {
+                  final scale = 1.0 + 0.18 * math.sin(scoreAnim.value * math.pi);
+                  return Transform.scale(
+                    scale: scale,
+                    child: _ScoreChip(score: score, compact: narrow),
+                  );
+                },
+              ),
+              const SizedBox(width: 4),
+              IconButton(
+                icon: const Icon(Icons.refresh_rounded, size: 20),
+                onPressed: onReset,
+                color: Colors.white54,
+                tooltip: 'Restart',
+              ),
             ],
           ),
-          const Spacer(),
-          // CURRENT fruit
-          _FruitPreviewCard(label: 'NOW', tierIndex: nextTier),
-          const SizedBox(width: 8),
-          // NEXT fruit
-          _FruitPreviewCard(label: 'NEXT', tierIndex: previewTier, dim: true),
-          const SizedBox(width: 12),
-          // Score
-          AnimatedBuilder(
-            animation: scoreAnim,
-            builder: (_, __) {
-              final scale = 1.0 + 0.18 * math.sin(scoreAnim.value * math.pi);
-              return Transform.scale(
-                scale: scale,
-                child: _ScoreChip(score: score),
-              );
-            },
-          ),
-          const SizedBox(width: 4),
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, size: 20),
-            onPressed: onReset,
-            color: Colors.white54,
-            tooltip: 'Restart',
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -215,18 +222,22 @@ class _FruitPreviewCard extends StatelessWidget {
   final String label;
   final int tierIndex;
   final bool dim;
+  final bool compact;
   const _FruitPreviewCard({
     required this.label,
     required this.tierIndex,
     this.dim = false,
+    this.compact = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final t = tierAt(tierIndex);
+    final hPad = compact ? 7.0 : 10.0;
+    final emojiSize = compact ? (dim ? 14.0 : 18.0) : (dim ? 18.0 : 22.0);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 6),
       decoration: BoxDecoration(
         color: dim
             ? Colors.white.withValues(alpha: 0.04)
@@ -251,9 +262,7 @@ class _FruitPreviewCard extends StatelessWidget {
             )),
           const SizedBox(height: 3),
           Text(kFruitEmoji[tierIndex],
-            style: TextStyle(
-              fontSize: dim ? 18 : 22,
-            )),
+            style: TextStyle(fontSize: emojiSize)),
           const SizedBox(height: 2),
           Text(t.name,
             style: TextStyle(
@@ -269,12 +278,13 @@ class _FruitPreviewCard extends StatelessWidget {
 
 class _ScoreChip extends StatelessWidget {
   final int score;
-  const _ScoreChip({required this.score});
+  final bool compact;
+  const _ScoreChip({required this.score, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: compact ? 10 : 14, vertical: 8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -307,11 +317,11 @@ class _ScoreChip extends StatelessWidget {
             )),
           const SizedBox(height: 2),
           Text('$score',
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 18,
+              fontSize: compact ? 15 : 18,
               fontWeight: FontWeight.w800,
-              fontFeatures: [FontFeature.tabularFigures()],
+              fontFeatures: const [FontFeature.tabularFigures()],
             )),
         ],
       ),
@@ -868,12 +878,12 @@ class _BottomHint extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(kIsWeb ? Icons.mouse_rounded : Icons.touch_app_rounded,
+          const Icon(Icons.touch_app_rounded,
             size: 13, color: Colors.white24),
           const SizedBox(width: 6),
-          Text(
-            kIsWeb ? 'Click inside arena to drop' : 'Tap inside arena to drop',
-            style: const TextStyle(color: Colors.white24, fontSize: 11),
+          const Text(
+            'Tap inside arena to drop',
+            style: TextStyle(color: Colors.white24, fontSize: 11),
           ),
           const Spacer(),
           Text(

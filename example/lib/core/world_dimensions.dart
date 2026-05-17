@@ -2,6 +2,9 @@
 ///
 /// Mobile uses a tall phone aspect ratio; [WorldLayout.web] widens the field
 /// so stacks and gadgets use horizontal space on desktop web.
+///
+/// Use [WorldLayout.forScreenWidth] to auto-pick based on available width
+/// (e.g. on web mobile browsers, narrow screens should use the mobile layout).
 class WorldLayout {
   const WorldLayout({
     required this.width,
@@ -25,6 +28,12 @@ class WorldLayout {
     wallThickness: 40,
     groundThickness: 80,
   );
+
+  /// Picks [web] on wide screens (≥ 700 logical pixels) and [mobile] otherwise.
+  /// Use this instead of `kIsWeb ? web : mobile` so that mobile web browsers
+  /// (which report narrow screen widths) get the portrait-friendly layout.
+  static WorldLayout forScreenWidth(double screenWidth) =>
+      screenWidth >= 700 ? web : mobile;
 
   final double width;
   final double height;
