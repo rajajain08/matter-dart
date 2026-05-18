@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:matter_dart/src/body/body.dart';
 import 'package:matter_dart/src/body/composite.dart';
-import 'package:matter_dart/src/collision/collision.dart';
+import 'package:matter_dart/src/collision/models/collision.dart';
 import 'package:matter_dart/src/constraint/constraint.dart';
 import 'package:matter_dart/src/geometry/bounds.dart';
 import 'package:matter_dart/src/geometry/vector.dart';

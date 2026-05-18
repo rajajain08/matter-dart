@@ -1,5 +1,5 @@
-import 'package:matter_dart/src/collision/collision.dart';
-import 'package:matter_dart/src/collision/pair.dart';
+import 'package:matter_dart/src/collision/models/collision.dart';
+import 'package:matter_dart/src/collision/models/pair.dart';
 
 class Pairs {
   double pairMaxIdleLife; //ms

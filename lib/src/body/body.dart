@@ -87,7 +87,7 @@ class Body extends MatterObject {
 
     body.vertices = Vertices.rotate(body.vertices, body.angle, body.position);
     Axes.rotate(body.axes, body.angle);
-    body.bounds!.update(body.vertices, body.velocity);
+    _updateBounds(body, body.velocity);
 
     // Allow options to override automatically calculated properties.
     body.axes = options.axes ?? body.axes;
@@ -207,19 +207,31 @@ class Body extends MatterObject {
 
     // Update properties.
     axes = Axes.fromVertices(vertices);
-    area = Vertices.area(vertices);
-    setMass(density * area);
 
-    // Orient vertices around the centre of mass at origin (0, 0)
-    Vector centre = Vertices.centre(vertices);
-    vertices = Vertices.translate(vertices, centre, -1);
+    if (circleRadius != null) {
+      // Exact formulas: area = πr², inertia = ½mr² (solid disc).
+      final double r = circleRadius!;
+      area = math.pi * r * r;
+      setMass(density * area);
+      Vector centre = Vertices.centre(vertices);
+      vertices = Vertices.translate(vertices, centre, -1);
+      setInertia(0.5 * mass * r * r);
+      vertices = Vertices.translate(vertices, position);
+    } else {
+      area = Vertices.area(vertices);
+      setMass(density * area);
 
-    // Update inertia while vertices are at origin (0, 0)
-    setInertia(Body._inertiaScale * Vertices.inertia(vertices, mass));
+      // Orient vertices around the centre of mass at origin (0, 0)
+      Vector centre = Vertices.centre(vertices);
+      vertices = Vertices.translate(vertices, centre, -1);
 
-    // Update geometry
-    vertices = Vertices.translate(vertices, position);
-    bounds?.update(vertices, velocity);
+      // Update inertia while vertices are at origin (0, 0)
+      setInertia(Body._inertiaScale * Vertices.inertia(vertices, mass));
+
+      // Update geometry
+      vertices = Vertices.translate(vertices, position);
+    }
+    _updateBounds(this);
   }
 
   /// Sets the parts of the `body` and updates mass, inertia and centroid.
@@ -300,7 +312,7 @@ class Body extends MatterObject {
       part.position.x += delta.x;
       part.position.y += delta.y;
       part.vertices = Vertices.translate(part.vertices, delta);
-      part.bounds!.update(part.vertices, velocity);
+      _updateBounds(part, velocity);
     }
   }
 
@@ -314,7 +326,7 @@ class Body extends MatterObject {
       part.angle += delta;
       part.vertices = Vertices.rotate(part.vertices, delta, position);
       Axes.rotate(part.axes, delta);
-      part.bounds!.update(part.vertices, velocity);
+      _updateBounds(part, velocity);
 
       if (index > 0) {
         final rotated = part.position.rotateAbout(delta, position);
@@ -392,7 +404,7 @@ class Body extends MatterObject {
         ..y = point.y + (part.position.y - point.y) * scaleY;
 
       // Update bounds.
-      part.bounds!.update(part.vertices, velocity);
+      _updateBounds(part, velocity);
     }
 
     // Handle parent body.
@@ -472,7 +484,17 @@ class Body extends MatterObject {
         }
       }
 
-      // Update bounds.
+      // Update bounds — use exact circle bounds when applicable.
+      _updateBounds(part, velocity);
+    }
+  }
+
+  /// Updates this body's AABB using exact circle bounds when circleRadius is set,
+  /// falling back to vertex-based bounds for polygons.
+  static void _updateBounds(Body part, [Vector? velocity]) {
+    if (part.circleRadius != null) {
+      part.bounds!.updateCircle(part.position, part.circleRadius!, velocity);
+    } else {
       part.bounds!.update(part.vertices, velocity);
     }
   }
