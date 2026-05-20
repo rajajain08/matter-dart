@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:matter_dart/src/body/body.dart';
-import 'package:matter_dart/src/collision/collision.dart';
-import 'package:matter_dart/src/collision/pair.dart';
+import 'package:matter_dart/src/collision/models/collision.dart';
+import 'package:matter_dart/src/collision/models/pair.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
 
 /// Contains methods to manage the sleeping state of bodies.

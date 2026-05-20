@@ -50,6 +50,26 @@ class Bounds {
     }
   }
 
+  /// Updates bounds from a circle's center and radius instead of polygon vertices.
+  /// This gives the exact AABB for a true circle rather than its inscribed polygon.
+  void updateCircle(Vector center, double radius, [Vector? velocity]) {
+    min = Offset(center.x - radius, center.y - radius);
+    max = Offset(center.x + radius, center.y + radius);
+
+    if (velocity != null) {
+      if (velocity.x > 0) {
+        max = max.translate(velocity.x, 0);
+      } else {
+        min = min.translate(velocity.x, 0);
+      }
+      if (velocity.y > 0) {
+        max = max.translate(0, velocity.y);
+      } else {
+        min = min.translate(0, velocity.y);
+      }
+    }
+  }
+
   /// Returns true if the given point is inside the bounds.
   bool contains(Vector point) {
     return point.x >= this.min.dx && point.x <= this.max.dx && point.y >= this.min.dy && point.y <= this.max.dy;

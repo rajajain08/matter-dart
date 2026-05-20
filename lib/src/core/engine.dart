@@ -1,11 +1,11 @@
 import 'package:matter_dart/src/body/body.dart';
 import 'package:matter_dart/src/body/composite.dart';
 import 'package:matter_dart/src/body/support/models.dart';
-import 'package:matter_dart/src/collision/collision.dart';
+import 'package:matter_dart/src/collision/broadphase/grid.dart';
 import 'package:matter_dart/src/collision/detector.dart';
-import 'package:matter_dart/src/collision/grid.dart';
-import 'package:matter_dart/src/collision/pairs.dart';
-import 'package:matter_dart/src/collision/resolver.dart';
+import 'package:matter_dart/src/collision/models/collision.dart';
+import 'package:matter_dart/src/collision/models/pairs.dart';
+import 'package:matter_dart/src/collision/response/resolver.dart';
 import 'package:matter_dart/src/constraint/constraint.dart';
 import 'package:matter_dart/src/core/events.dart';
 import 'package:matter_dart/src/core/sleeping.dart';
@@ -20,6 +20,13 @@ class Engine with Eventful {
 
   // Specifies the number of constraint iterations to perform each update.
   double constraintIterations = 2;
+
+  // Number of integration sub-steps per [update] call. 1 = legacy behaviour.
+  // Increase (e.g. 2-4) for dense stacks/piles where bodies briefly overlap
+  // during high-energy contact events. Cost scales linearly: N substeps does
+  // N× the collision detection + solver work per frame. Gravity is rescaled
+  // per substep so total per-frame physics matches the 1-step baseline.
+  int subSteps = 1;
 
   // Specifies whether the engine should allow sleeping via the `Matter.Sleeping` module.
   bool enableSleeping = false;
@@ -42,6 +49,7 @@ class Engine with Eventful {
     this.positionIterations = 6,
     this.velocityIterations = 4,
     this.constraintIterations = 2,
+    this.subSteps = 1,
     this.enableSleeping = false,
     EngineGravityOptions? gravity,
     EngineTimingOptions? timing,
@@ -70,69 +78,76 @@ class Engine with Eventful {
   void update(double? delta, double? correction) {
     delta = delta ?? 1000 / 60;
     correction = correction ?? 1;
-    List<GridPair> gridPairs;
-    int i;
     timing.timestamp += delta * timing.timeScale;
     timing.lastDelta = delta * timing.timeScale;
 
     trigger('beforeUpdate', {'timestamp': timing.timestamp});
+
+    final int n = subSteps < 1 ? 1 : subSteps;
+    final double stepDelta = delta / n;
+    // Verlet integrates force as F/m·dt². Splitting the frame into N substeps
+    // shrinks each dt by 1/N, so per-substep force displacement scales by 1/N²
+    // and the per-frame sum by 1/N. We scale gravity by N each substep so the
+    // total per-frame physics matches the 1-step baseline.
+    final double gravityScale = n.toDouble();
+
+    for (int s = 0; s < n; s++) {
+      _step(stepDelta, correction, gravityScale);
+    }
+
+    trigger('afterUpdate', {'timestamp': timing.timestamp});
+  }
+
+  /// Runs one integration + collision + solve pass for [stepDelta]. Gravity
+  /// force is multiplied by [gravityForceScale] (used by [update] to rescale
+  /// when substepping; pass 1 for a single-step frame).
+  void _step(double delta, double correction, double gravityForceScale) {
+    List<GridPair> gridPairs;
+    int i;
 
     List<Body> allBodies = this.world?.allBodies() ?? [];
     List<Constraint>? allConstraints = this.world?.allConstraints();
     if (this.enableSleeping) {
       Sleeping.update(allBodies, timing.timeScale);
     }
-    // applies gravity to all bodies
-    _bodiesApplyGravity(allBodies);
-
-    // update all body position and rotation by integration
+    _bodiesApplyGravity(allBodies, gravityForceScale);
     _bodiesUpdate(allBodies, delta, timing.timeScale, correction);
 
     if (world?.isModified ?? false) {
       grid?.clear();
     }
-
-    // update the grid buckets based on current bodies
     grid?.update(allBodies, this, world?.isModified ?? false);
     gridPairs = grid?.pairsList ?? [];
-
-    // clear all composite modified flags
     if (world?.isModified ?? false) {
       world?.setModified(false, false, true);
     }
 
-    // narrowphase pass: find actual collisions, then create or update collision pairs
     List<Collision> collisions = Detector.collisions(gridPairs, this);
 
-    // update collision pairs
     this.pairs ??= Pairs.create();
     Pairs pairs = this.pairs!;
     double timestamp = timing.timestamp;
     pairs.update(collisions, timestamp);
     pairs.removeOld(timestamp);
 
-    // wake up bodies involved in collisions
     if (enableSleeping) Sleeping.afterCollisions(pairs.list, timing.timeScale);
 
     if (pairs.collisionStart.isNotEmpty) {
       trigger('collisionStart', {'pairs': pairs.collisionStart});
     }
 
-    // iteratively resolve position between collisions
     Resolver.preSolvePosition(pairs.list);
     for (i = 0; i < positionIterations; i++) {
       Resolver.solvePosition(pairs.list, timing.timeScale);
     }
     Resolver.postSolvePosition(allBodies);
 
-    // solve constraints
     Constraint.preSolveAll(allBodies);
     for (i = 0; i < constraintIterations; i++) {
       Constraint.solveAll(allConstraints ?? [], timing.timeScale);
     }
     Constraint.postSolveAll(allBodies);
 
-    // iteratively resolve velocity between collisions
     Resolver.preSolveVelocity(pairs.list);
     for (i = 0; i < velocityIterations; i++) {
       Resolver.solveVelocity(pairs.list, timing.timeScale);
@@ -146,14 +161,10 @@ class Engine with Eventful {
     }
 
     _bodiesClearForces(allBodies);
-    trigger('afterUpdate', {'timestamp': timing.timestamp});
-
-    // log the time elapsed computing this update TODO
-    // timing.lastElapsed = Common.now() - startTime;
   }
 
-  void _bodiesApplyGravity(List<Body> bodies) {
-    double gravityScale = this.gravity.scale;
+  void _bodiesApplyGravity(List<Body> bodies, [double forceScale = 1]) {
+    double gravityScale = this.gravity.scale * forceScale;
     if ((gravity.x == 0 && gravity.y == 0) || gravityScale == 0) {
       return;
     }
@@ -204,6 +215,7 @@ class Engine with Eventful {
     engine.broadphase = options.broadphase ?? engine.broadphase;
     engine.pairs = options.pairs ?? engine.pairs;
     engine.positionIterations = options.positionIterations ?? engine.positionIterations;
+    engine.subSteps = options.subSteps ?? engine.subSteps;
     engine.timing = options.timing ?? engine.timing;
     engine.velocityIterations = options.velocityIterations ?? engine.velocityIterations;
     engine.world = options.world ?? engine.world;
@@ -237,6 +249,9 @@ class EngineOptions {
 
   double? constraintIterations = 2;
 
+  /// Number of integration sub-steps per engine update. See [Engine.subSteps].
+  int? subSteps;
+
   bool? enableSleeping = false;
 
   List<dynamic>? events = [];
@@ -257,6 +272,7 @@ class EngineOptions {
       {this.positionIterations,
       this.velocityIterations,
       this.constraintIterations,
+      this.subSteps,
       this.enableSleeping,
       this.events,
       this.grid,

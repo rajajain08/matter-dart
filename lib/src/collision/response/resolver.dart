@@ -1,12 +1,12 @@
 import 'dart:math' as math;
 
 import 'package:matter_dart/src/body/body.dart';
-import 'package:matter_dart/src/collision/contact.dart';
+import 'package:matter_dart/src/collision/models/contact.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
 import 'package:matter_dart/src/geometry/vertices.dart';
 import 'package:matter_dart/src/utils/common.dart';
 
-import 'pair.dart';
+import 'package:matter_dart/src/collision/models/pair.dart';
 
 /// [Resolver] contains methods for resolving collision pairs.
 class Resolver {

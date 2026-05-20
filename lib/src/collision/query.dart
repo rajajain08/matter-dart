@@ -1,11 +1,11 @@
 import 'package:matter_dart/src/body/body.dart';
-import 'package:matter_dart/src/collision/collision.dart';
+import 'package:matter_dart/src/collision/models/collision.dart';
 import 'package:matter_dart/src/factory/bodies.dart';
 import 'package:matter_dart/src/geometry/bounds.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
 import 'package:matter_dart/src/geometry/vertices.dart';
 
-import 'SAT.dart';
+import 'package:matter_dart/src/collision/detection/sat.dart';
 
 /// [Query] contains methods for performing collision queries.
 class Query {

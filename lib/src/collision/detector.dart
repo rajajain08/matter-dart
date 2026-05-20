@@ -1,10 +1,11 @@
 import 'package:matter_dart/src/body/body.dart';
 import 'package:matter_dart/src/core/engine.dart';
 
-import 'SAT.dart';
-import 'collision.dart';
-import 'grid.dart';
-import 'pair.dart';
+import 'package:matter_dart/src/collision/broadphase/grid.dart';
+import 'package:matter_dart/src/collision/detection/circle.dart';
+import 'package:matter_dart/src/collision/detection/sat.dart';
+import 'package:matter_dart/src/collision/models/collision.dart';
+import 'package:matter_dart/src/collision/models/pair.dart';
 
 class Detector {
   /// Finds all collisions given a list of pairs.
@@ -40,8 +41,17 @@ class Detector {
                 previousCollision = null;
               }
 
-              // Narrow phase
-              Collision collision = SAT.collides(partA, partB, previousCollision);
+              // Narrow phase — route by shape type
+              final bool aIsCircle = partA.circleRadius != null;
+              final bool bIsCircle = partB.circleRadius != null;
+              final Collision collision;
+              if (aIsCircle && bIsCircle) {
+                collision = CircleCollision.circleCircle(partA, partB, previousCollision);
+              } else if (aIsCircle || bIsCircle) {
+                collision = CircleCollision.circlePolygon(partA, partB, previousCollision);
+              } else {
+                collision = SAT.collides(partA, partB, previousCollision);
+              }
               if (collision.collided) collisions.add(collision);
             }
           }

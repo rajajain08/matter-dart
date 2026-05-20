@@ -5,15 +5,16 @@ export 'src/body/composite.dart';
 export 'src/body/support/models.dart';
 export 'src/body/world.dart';
 
-export 'src/collision/collision.dart';
-export 'src/collision/contact.dart';
+export 'src/collision/broadphase/grid.dart';
+export 'src/collision/detection/sat.dart';
+export 'src/collision/detection/circle.dart';
+export 'src/collision/models/collision.dart';
+export 'src/collision/models/contact.dart';
+export 'src/collision/models/pair.dart';
+export 'src/collision/models/pairs.dart';
+export 'src/collision/response/resolver.dart';
 export 'src/collision/detector.dart';
-export 'src/collision/grid.dart';
-export 'src/collision/pair.dart';
-export 'src/collision/pairs.dart';
 export 'src/collision/query.dart';
-export 'src/collision/resolver.dart';
-export 'src/collision/SAT.dart';
 
 export 'src/constraint/constraint.dart';
 

@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:matter_dart/src/body/body.dart';
-import 'package:matter_dart/src/collision/collision.dart';
+import 'package:matter_dart/src/collision/models/collision.dart';
 import 'package:matter_dart/src/geometry/vector.dart';
 import 'package:matter_dart/src/geometry/vertices.dart';
 
