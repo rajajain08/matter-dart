@@ -17,7 +17,7 @@ final Demo plinkoDemo = Demo(
 const int _rows = 8;
 const double _pegRadius = 7;
 const double _ballRadius = 6;
-const int _ballCount = 18;
+const int _ballCount = 50;
 
 void _build(Composite world, math.Random rng) {
   final bodies = <Body>[];
@@ -40,7 +40,7 @@ void _build(Composite world, math.Random rng) {
         _pegRadius,
         BodyOptions(
           isStatic: true,
-          restitution: 0.6,
+          restitution: 0.85,
           friction: 0.0,
         ),
         maxSides: 24,
@@ -48,20 +48,30 @@ void _build(Composite world, math.Random rng) {
     }
   }
 
-  // Stack balls vertically above the pegs, fully inside the world so they
-  // don't get pinned against the ceiling.
+  // Cluster balls in a tight grid above the pegs. Single-column stacking
+  // can't fit 50 balls in the available headroom, so we fan out into a
+  // multi-column block centred on the playfield. A small jitter on each
+  // slot prevents perfectly symmetric initial conditions (which would
+  // collapse into a deterministic spine through the peg grid).
   final double stackTop = WorldDimensions.innerTop + 16;
+  final double bottomLimit = topY - _pegRadius - _ballRadius * 2;
+  final double pitch = _ballRadius * 2 + 1; // gap so balls don't spawn touching.
+  final double clusterWidth = WorldDimensions.innerWidth * 0.6;
+  final int cols = math.max(1, (clusterWidth / pitch).floor());
+  final double clusterLeft = WorldDimensions.width / 2 - (cols - 1) * pitch / 2;
   for (int i = 0; i < _ballCount; i++) {
-    final double x = WorldDimensions.width / 2 +
-        (rng.nextDouble() - 0.5) * (spacingX * 0.5);
-    final double y = stackTop + i * (_ballRadius * 2 + 2);
-    if (y > topY - _pegRadius - _ballRadius) break;
+    final int row = i ~/ cols;
+    final int col = i % cols;
+    final double y = stackTop + row * pitch;
+    if (y > bottomLimit) break;
+    final double jitterX = (rng.nextDouble() - 0.5) * (pitch * 0.4);
+    final double jitterY = (rng.nextDouble() - 0.5) * (pitch * 0.2);
     bodies.add(Bodies.circle(
-      x,
-      y,
+      clusterLeft + col * pitch + jitterX,
+      y + jitterY,
       _ballRadius,
       BodyOptions(
-        restitution: 0.55,
+        restitution: 0.75,
         friction: 0.0,
         frictionAir: 0.005,
         density: 0.002,
