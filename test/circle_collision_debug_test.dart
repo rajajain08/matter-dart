@@ -10,11 +10,6 @@ void main() {
   group('rectangle vertex winding (sanity)', () {
     test('rectangle vertices wrap around body.position', () {
       final box = makeBox(100, 100, 40, 20);
-      print('--- rectangle 40x20 at (100,100) ---');
-      print('position: (${box.position.x}, ${box.position.y})');
-      for (final v in box.vertices) {
-        print('  v[${v.index}]: (${v.x}, ${v.y})');
-      }
       // Expect vertices spread around (100,100)
       double minX = double.infinity, maxX = -double.infinity;
       double minY = double.infinity, maxY = -double.infinity;
@@ -33,7 +28,6 @@ void main() {
     test('Vertices.contains returns true for box center', () {
       final box = makeBox(100, 100, 40, 20);
       final inside = Vertices.contains(box.vertices, Vector(100, 100));
-      print('center (100,100) inside rectangle? $inside');
       expect(inside, isTrue, reason: 'box center MUST be inside its own polygon');
     });
 
@@ -46,7 +40,6 @@ void main() {
       // box spans y in [90,110]. Point at y=50 is above (smaller y in screen coords).
       final box = makeBox(100, 100, 40, 20);
       final result = Vertices.contains(box.vertices, Vector(100, 50));
-      print('point (100,50) inside rectangle spanning y[90,110]? $result');
       expect(result, isFalse);
     });
   });
@@ -57,8 +50,6 @@ void main() {
       final circle = makeCircle(100, 83, 10);
       final box = makeBox(100, 100, 100, 20);
       final c = CircleCollision.circlePolygon(circle, box);
-      print('CASE A overlap-from-above: collided=${c.collided} depth=${c.depth}');
-      print('  normal=(${c.normal?.x.toStringAsFixed(3)}, ${c.normal?.y.toStringAsFixed(3)})');
       expect(c.collided, isTrue);
       expect(c.depth, closeTo(3.0, 0.5));
     });
@@ -68,8 +59,6 @@ void main() {
       final circle = makeCircle(100, 90, 10);
       final box = makeBox(100, 100, 100, 20);
       final c = CircleCollision.circlePolygon(circle, box);
-      print('CASE B center-on-edge: collided=${c.collided} depth=${c.depth}');
-      print('  normal=(${c.normal?.x.toStringAsFixed(3)}, ${c.normal?.y.toStringAsFixed(3)})');
       expect(c.collided, isTrue);
       // half the circle is inside → depth should be ~r = 10
       expect(c.depth, closeTo(10.0, 0.5));
@@ -82,8 +71,6 @@ void main() {
       final circle = makeCircle(100, 100, 10);
       final box = makeBox(100, 100, 100, 20);
       final c = CircleCollision.circlePolygon(circle, box);
-      print('CASE C deep-inside: collided=${c.collided} depth=${c.depth}');
-      print('  normal=(${c.normal?.x.toStringAsFixed(3)}, ${c.normal?.y.toStringAsFixed(3)})');
       expect(c.collided, isTrue);
       expect(c.depth, closeTo(20.0, 0.5), reason: 'deep penetration depth = r + minDist');
       // normal magnitude should be 1
@@ -97,8 +84,6 @@ void main() {
       final circle = makeCircle(100, 95, 10);
       final box = makeBox(100, 100, 100, 20);
       final c = CircleCollision.circlePolygon(circle, box);
-      print('CASE D inside-near-top: collided=${c.collided} depth=${c.depth}');
-      print('  normal=(${c.normal?.x.toStringAsFixed(3)}, ${c.normal?.y.toStringAsFixed(3)})');
       expect(c.collided, isTrue);
       expect(c.depth, closeTo(15.0, 0.5));
     });
@@ -107,7 +92,6 @@ void main() {
       final circle = makeCircle(100, 50, 10);
       final box = makeBox(100, 100, 40, 20);
       final c = CircleCollision.circlePolygon(circle, box);
-      print('CASE E no-collision: collided=${c.collided}');
       expect(c.collided, isFalse);
     });
 
@@ -123,7 +107,6 @@ void main() {
       final dx = c.bodyB.position.x - c.bodyA.position.x;
       final dy = c.bodyB.position.y - c.bodyA.position.y;
       final dot = c.normal!.x * dx + c.normal!.y * dy;
-      print('CASE F dot(normal, B-A) = $dot');
       expect(dot, lessThanOrEqualTo(0),
           reason: 'SAT convention used by this engine: normal must face B→A');
     });
@@ -142,7 +125,6 @@ void main() {
         if (circle.position.y < minY) minY = circle.position.y;
         if (circle.position.y > maxY) maxY = circle.position.y;
       }
-      print('thick-floor: final circle.y=${circle.position.y.toStringAsFixed(2)}, max y reached=$maxY');
       // floor top is y=190; circle radius 10 → resting center should be ~180 (with slop)
       expect(circle.position.y, lessThan(192), reason: 'circle should not pass through floor');
       expect(circle.position.y, greaterThan(170), reason: 'circle should be near resting position');
@@ -160,7 +142,6 @@ void main() {
         engine.update(1000 / 60, 1);
         if (circle.position.y > maxY) maxY = circle.position.y;
       }
-      print('thin-floor: final circle.y=${circle.position.y.toStringAsFixed(2)}, max y reached=$maxY');
       // floor spans y[198..202]; circle should sit on top with center ~188
       expect(circle.position.y, lessThan(200),
           reason: 'circle should not tunnel through thin floor');
@@ -180,7 +161,6 @@ void main() {
         engine.update(1000 / 60, 1);
       }
       for (final c in circles) {
-        print('  stacked circle y=${c.position.y.toStringAsFixed(2)}');
         expect(c.position.y, lessThan(291),
             reason: 'no circle should pass through floor');
       }

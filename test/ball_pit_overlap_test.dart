@@ -48,34 +48,9 @@ void main() {
 
     engine.world!.add([...walls, ...circles]);
 
-    // Track worst overlap seen at ANY step, not just the final state.
-    double worstEverOverlap = 0;
-    int worstEverStep = -1;
-    String worstEverPair = '';
-    double worstSpeedSum = 0;
     for (int step = 0; step < 600; step++) {
       engine.update(1000 / 60, 1);
-      for (int i = 0; i < circles.length; i++) {
-        for (int j = i + 1; j < circles.length; j++) {
-          final a = circles[i];
-          final b = circles[j];
-          final dx = b.position.x - a.position.x;
-          final dy = b.position.y - a.position.y;
-          final d = math.sqrt(dx * dx + dy * dy);
-          final ov = (a.circleRadius! + b.circleRadius!) - d;
-          if (ov > worstEverOverlap) {
-            worstEverOverlap = ov;
-            worstEverStep = step;
-            worstSpeedSum = a.speed + b.speed;
-            worstEverPair = '$i,$j r=${a.circleRadius!.toStringAsFixed(1)}+${b.circleRadius!.toStringAsFixed(1)} d=${d.toStringAsFixed(2)} |va|+|vb|=${worstSpeedSum.toStringAsFixed(2)}';
-          }
-        }
-      }
     }
-    print('=== ball-pit during simulation ===');
-    print('worst transient overlap: ${worstEverOverlap.toStringAsFixed(3)} px '
-        'at step $worstEverStep (pair $worstEverPair)');
-
     // Final settled state.
     const double allowed = 0.5;
     double worstOverlap = 0;
@@ -99,11 +74,6 @@ void main() {
         }
       }
     }
-
-    print('=== ball-pit settled state ===');
-    print('worst pairwise overlap: ${worstOverlap.toStringAsFixed(3)} px');
-    print('violators (> $allowed px): $violators');
-    for (final d in details) print(d);
 
     expect(violators, equals(0),
         reason: 'Settled circles should not overlap more than slop.\n${details.join('\n')}');
@@ -133,8 +103,6 @@ void main() {
     final ddy = b.position.y - a.position.y;
     final finalDist = math.sqrt(ddx * ddx + ddy * ddy);
     final finalOverlap = 20.0 - finalDist;
-    print('head-on transient max overlap: ${worst.toStringAsFixed(3)} px, '
-        'final overlap: ${finalOverlap.toStringAsFixed(3)} px');
     // Transient overlap is bounded by max integration step (~25 px/frame cap).
     // What matters is that the simulation recovers — final state must not overlap.
     expect(finalOverlap, lessThan(0.5),
